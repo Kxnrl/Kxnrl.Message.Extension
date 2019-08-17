@@ -1,9 +1,12 @@
 ## Kxnrl.Message.Extension
-  
+
 #### 作为游戏服务器与后台程序通信的桥梁
-*** Made by Kyle "Kxnrl" Frankiss ***  
-***   Copyright ©2011-2019 Kyle   ***  
+ **Copyright ©2011-2019  Kyle**  
    
+|Build Status|Download|
+|---|---
+|[![Build Status](https://img.shields.io/travis/Kxnrl/Kxnrl.Message.Extension/master.svg?style=flat-square)](https://travis-ci.org/Kxnrl/Kxnrl.Message.Extension?branch=master) |[![Download](https://static.kxnrl.com/images/web/buttons/download.png)](https://build.kxnrl.com/_Raw/Kxnrl.Message.Extension/)  
+  
    
 ### 参数
 #### 以下参数需要添加到 addons/sourcemod/configs/core.cfg
@@ -196,9 +199,12 @@ methodmap Message < Handle
 
 
 ### 编译
-* 需要使用Visual Studio 2017 - Windows XP (v141_xp)工具集进行编译
-* 需要Boost库 >= 1.69.0 | 将文件放入boost文件夹 | 将lib放入lib文件夹
-* 需要JsonCPP库 >= 1.y.z | 将文件放入json文件夹 | 将lib放入lib文件夹
-* 需要WebsocketPP库 >= 0.8.1 | 将文件放入websocketpp文件夹 | 将lib放入lib文件夹
-* 需要Sourcemod SDK >= 1.9 | 解压至任意文件夹 | 在系统环境变脸添加变量"SourceMod"且路径指向解压位置
-* 双击/msvc15/Kxnrl.Message.sln | 按下F5编译
+* 手动编译
+  - 需要使用Visual Studio 2017 - Windows XP (v141_xp)工具集进行编译
+  - 需要Sourcemod SDK >= 1.9
+  - 需要在系统变量添加"SourceMod"且路径指向解压位置
+  - 双击/msvc15/Kxnrl.Message.sln
+  - 按下F5编译
+* 自动编译
+  - 直接运行build.bat
+ 
