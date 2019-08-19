@@ -8,6 +8,7 @@ const sp_nativeinfo_t MessageNatives[] =
     {"Message.Message",         Native_Message},
     {"Message.Type.get",        Native_MsgType},
     {"Message.Send",            Native_Send},
+    {"Message.RawJson",         Native_RawJson},
 
     {"Message.ArraySize",       Native_ArraySize},
     {"Message.ArrayIndex.get",  Native_getArrayIndex},
@@ -82,10 +83,30 @@ cell_t Native_Send(IPluginContext *pContext, const cell_t *params)
 
     string json = message->JsonString();
 
-    // auto release handle
-    handlesys->FreeHandle(hndl, &sec);
-    
+    // if not close, we can re-use
+    if (params[2])
+    {
+        // release handle
+        handlesys->FreeHandle(hndl, &sec);
+    }
+
     return Send(json);
+}
+
+cell_t Native_RawJson(IPluginContext *pContext, const cell_t *params)
+{
+    Handle_t hndl = static_cast<Handle_t>(params[1]);
+    HandleError err;
+    HandleSecurity sec = HandleSecurity(NULL, myself->GetIdentity());
+
+    KMessage *message;
+    if ((err = handlesys->ReadHandle(hndl, g_MessageHandleType, &sec, (void **)&message)) != HandleError_None)
+    {
+        // ughahahah
+        return pContext->ThrowNativeError("Invalid Message handle %x (error %d)", hndl, err);
+    }
+
+    return pContext->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), message->JsonString().c_str(), NULL);
 }
 
 cell_t Native_ArraySize(IPluginContext *pContext, const cell_t *params)

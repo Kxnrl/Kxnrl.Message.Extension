@@ -129,18 +129,20 @@ public:
 
 public:
 
-    string JsonString() const
+    string JsonString(bool pretty = false)
     {
         Json::StreamWriterBuilder m_Writer;
-        m_Writer["indentation"] = "";
+        m_Writer["indentation"] = pretty ? "    " : "";
         return Json::writeString(m_Writer, m_RawJson);
     };
 
     // create from plugin
     KMessage(Message_Type type)
     {
+        m_ArrayMode = false;
+        m_ArrayIndex = 0;
         m_MsgType = type;
-        m_RawJson["Message_Type"] = Message_Type::Invalid;
+        m_RawJson["Message_Type"] = (int16_t)m_MsgType;
     }
 
     // recv from server
@@ -160,6 +162,8 @@ public:
         }
 
         m_MsgType = (Message_Type)m_RawJson["Message_Type"].asInt();
+        m_ArrayMode = false;
+        m_ArrayIndex = 0;
     }
 
     ~KMessage()
@@ -312,7 +316,7 @@ public:
             }
         }
 
-        return 0;
+        return (int16_t)json.asInt();
     }
 
     int32_t ReadInt32(const char *key)
@@ -331,7 +335,7 @@ public:
             }
         }
 
-        return 0;
+        return (int32_t)json.asInt();
     }
 
     int64_t ReadInt64(const char *key)

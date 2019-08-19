@@ -28,13 +28,24 @@ const sp_nativeinfo_t WebSocketNatives[] =
     {NULL, NULL}
 };
 
-ITimer *g_HeartBeat;
+ITimer *g_HeartBeat = NULL;
+
+time_t g_LastSent;
+time_t g_Interval;
 
 class HeartBeatTimer : public ITimedEvent
 {
 public:
     ResultType OnTimer(ITimer *pTimer, void *pData)
     {
+        time_t now = time(NULL);
+
+        if (now - g_LastSent < g_Interval)
+        {
+            // recently
+            return Pl_Continue;
+        }
+
         static int count = 0;
 
         KMessage *message = new KMessage(Message_Type::PingPong);
@@ -83,7 +94,8 @@ public:
             smutils->LogMessage(myself, "Socket is unavailable now. Push data to queue.");
             return false;
         }
-   
+
+        g_LastSent = time(NULL);
         m_WebSocket.send(m_Connection_hdl, message, opcode::text);
         return true;
     }
@@ -232,6 +244,9 @@ private:
             m_bQueue.pop();
             m_WebSocket.send(m_Connection_hdl, data, opcode::text);
         }
+
+        g_LastSent = time(NULL);
+        g_HeartBeat = timersys->CreateTimer(&g_HeartBeatTimer, 1.0f, NULL, TIMER_FLAG_REPEAT);
     }
 
     void OnFail(connection_hdl hdl)
@@ -246,6 +261,13 @@ private:
         {
             m_WebSocket.stop();
             smutils->LogMessage(myself, "Stopped websocket on fail.");
+        }
+
+        if (g_HeartBeat != NULL)
+        {
+            // reset
+            timersys->KillTimer(g_HeartBeat);
+            g_HeartBeat = NULL;
         }
 
         if (!m_bConnecting && !m_bConnecting)
@@ -266,6 +288,13 @@ private:
         {
             m_WebSocket.stop();
             smutils->LogMessage(myself, "Stopped socket on closed.");
+        }
+
+        if (g_HeartBeat != NULL)
+        {
+            // reset
+            timersys->KillTimer(g_HeartBeat);
+            g_HeartBeat = NULL;
         }
 
         if (!m_bConnecting && !m_bConnecting)
@@ -292,7 +321,7 @@ IThreadHandle *CreateThread(float heartbeat)
     ThreadParams params;
     params.flags = ThreadFlags::Thread_Default;
     params.prio = ThreadPriority::ThreadPrio_Low;
-    g_HeartBeat = timersys->CreateTimer(&g_HeartBeatTimer, heartbeat, NULL, TIMER_FLAG_REPEAT);
+    g_Interval = (time_t)std::chrono::system_clock::to_time_t(std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<float>(heartbeat))));
     return threader->MakeThread(&wsclient, &params);
 }
 

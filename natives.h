@@ -7,6 +7,7 @@
 cell_t Native_Message(IPluginContext *pContext, const cell_t *params);
 cell_t Native_MsgType(IPluginContext *pContext, const cell_t *params);
 cell_t Native_Send(IPluginContext *pContext, const cell_t *params);
+cell_t Native_RawJson(IPluginContext *pContext, const cell_t *params);
 
 cell_t Native_ArraySize(IPluginContext *pContext, const cell_t *params);
 cell_t Native_getArrayIndex(IPluginContext *pContext, const cell_t *params);
