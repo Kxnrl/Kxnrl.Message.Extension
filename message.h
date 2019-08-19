@@ -24,6 +24,8 @@ enum Message_Type
     Server_StartMap     = 104,
     Server_EndMap       = 105,
     Server_Query        = 106,
+    Server_PushError    = 107,
+    Server_PushLog      = 108,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -60,11 +62,6 @@ enum Message_Type
     Vip_LoadUser        = 601,
     Vip_LoadAll         = 602,
     Vip_FromClient      = 603,
-
-    /* Client */
-    Client_ForwardUser  = 701,
-    Client_HeartBeat    = 702,
-    Client_S2S          = 703,
 
     /* Analytics */
     

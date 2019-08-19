@@ -131,7 +131,7 @@ begin:
     string json = g_tRecvQueue.front();
     g_tRecvQueue.pop();
 
-    bool success;
+    bool success = false;
     KMessage *message = new KMessage(json, success);
     if (!success)
     {
@@ -139,6 +139,10 @@ begin:
         delete message;
         goto begin;
     }
+
+    //printf_s("\n\nRecv Message: \n");
+    //printf_s(message->JsonString().c_str());
+    //printf_s("\n\n");
 
     Handle_t handle = handlesys->CreateHandle(g_MessageHandleType, message, myself->GetIdentity(), myself->GetIdentity(), NULL);
 
