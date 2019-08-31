@@ -1,4 +1,4 @@
-#include <queue>
+﻿#include <queue>
 
 #include "extension.h"
 #include "websocket.h"
@@ -17,6 +17,9 @@ IForward *g_fwdOnMessage = NULL;
 string g_Socket_Url;
 string g_Socket_Key;
 tQueue g_tRecvQueue;
+
+// shutdown
+uint8_t g_KillAll;
 
 // Ext
 kMessage g_kMessage;
@@ -79,7 +82,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     else
     {
         interval = (float)atof(val);
-        if (interval <  10.0f) interval =  10.0f;
+        if (interval < 10.0f) interval = 10.0f;
         if (interval > 999.9f) interval = 999.9f;
         printf_s("%sSocket heartbeat interval [%.1f]...\n", THIS_PREFIX, interval);
     }
@@ -101,7 +104,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     sharesys->AddNatives(myself, MessageNatives);
 
     smutils->AddGameFrameHook(OnGameFrame);
-    
+
     return true;
 }
 
@@ -124,6 +127,32 @@ void kMessage::SDK_OnUnload()
 
 void OnGameFrame(bool simulating)
 {
+    if (g_KillAll == 1)
+    {
+        smutils->LogError(myself, "Failed to connect to socket server with too many retires. shutdown server...");
+
+        IGamePlayer *pPlayer;
+        for (int client = 1; client <= playerhelpers->GetMaxClients(); ++client)
+        {
+            pPlayer = playerhelpers->GetGamePlayer(client);
+
+            if (!pPlayer || !pPlayer->IsConnected() || pPlayer->IsInKickQueue())
+            {
+                continue;
+            }
+
+            pPlayer->Kick("服务器发生致命错误即将重新启动.\n请1分钟后尝试重新连接服务器.");
+        }
+
+        g_KillAll++;
+        return;
+    }
+
+    if (g_KillAll == 2)
+    {
+        gamehelpers->ServerCommand("_restart");
+    }
+
 begin:
     if (g_tRecvQueue.empty())
         return;
@@ -144,13 +173,19 @@ begin:
     //printf_s(message->JsonString().c_str());
     //printf_s("\n\n");
 
-    Handle_t handle = handlesys->CreateHandle(g_MessageHandleType, message, myself->GetIdentity(), myself->GetIdentity(), NULL);
+    Handle_t handle = handlesys->CreateHandle(g_MessageHandleType, message, NULL, myself->GetIdentity(), NULL);
 
     g_fwdOnMessage->PushCell(handle);
     g_fwdOnMessage->Execute();
 
-    HandleSecurity sec = HandleSecurity(myself->GetIdentity(), myself->GetIdentity());
-    handlesys->FreeHandle(handle, &sec);
+    HandleError err;
+    HandleSecurity sec;
+    sec.pIdentity = myself->GetIdentity();
+
+    if ((err = handlesys->FreeHandle(handle, &sec)) != HandleError_None)
+    {
+        smutils->LogError(myself, "[OnGameFrame] Failed to close Message handle %x (error %d)", handle, err);
+    }
 }
 
 void PushMessage(string message)

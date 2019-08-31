@@ -19,6 +19,7 @@ typedef websocketpp::client<websocketpp::config::asio_client> client;
 typedef websocketpp::config::asio_client::message_type::ptr message_ptr;
 typedef websocketpp::connection_hdl connection_hdl;
 typedef client::connection_ptr connection_ptr;
+typedef ws_lib::error_code errcode;
 typedef std::chrono::duration<int, std::micro> dur_type;
 typedef std::string string;
 
@@ -96,7 +97,13 @@ public:
         }
 
         g_LastSent = time(NULL);
-        m_WebSocket.send(m_Connection_hdl, message, opcode::text);
+        errcode ec;
+        m_WebSocket.send(m_Connection_hdl, message, opcode::text, ec);
+        if (ec)
+        {
+            smutils->LogError(myself, "Failed to send message to server: %s -> [%s]", ec.message().c_str(), message.c_str());
+            return false;
+        }
         return true;
     }
 
@@ -125,6 +132,7 @@ private:
     bool m_bClosing = false;
     std::queue<string> m_bQueue;
     typedef WebSocketClient self;
+    uint8_t m_Retries = 0;
 
     /* Init WebSocket */
     void Init(bool init = false)
@@ -172,12 +180,13 @@ private:
         {
             m_bConnecting = false;
             smutils->LogError(myself, "[FATAL ERROR]  Failed to create connection_hdl to '%s': %s", g_Socket_Url.c_str(), ec.message().c_str());
-            gamehelpers->ServerCommand("exit");
+            g_KillAll = 1;
             return;
         }
 
         // Connect
-        Connect(false);
+        m_Retries++;
+        Connect(!init);
     }
 
     bool Connect(bool reconnect = true)
@@ -187,7 +196,7 @@ private:
             return false;
 
         // sleep
-        threader->ThreadSleep(reconnect ? 60000u : 5000u);
+        threader->ThreadSleep(reconnect ? 10000u : 5000u);
 
         // Connection
         try
@@ -221,6 +230,7 @@ private:
             m_bConnected = false;
             //m_WebSocket.close(g_Connection, opcode::close, "DISCONNECT");
         }
+
         if (!m_WebSocket.stopped())
         {
             m_WebSocket.stop();
@@ -236,15 +246,15 @@ private:
 
         smutils->LogMessage(myself, "Socket conneted to \"%s\".", g_Socket_Url.c_str());
 
-        m_WebSocket.send(m_Connection_hdl, g_Socket_Key, opcode::text);
-
+        // push all local storage
         while (!m_bQueue.empty())
         {
-            string data = m_bQueue.front();
+            auto data = m_bQueue.front();
             m_bQueue.pop();
-            m_WebSocket.send(m_Connection_hdl, data, opcode::text);
+            Send(data);
         }
 
+        m_Retries = 0;
         g_LastSent = time(NULL);
         g_HeartBeat = timersys->CreateTimer(&g_HeartBeatTimer, 1.0f, NULL, TIMER_FLAG_REPEAT);
     }
@@ -270,6 +280,12 @@ private:
             g_HeartBeat = NULL;
         }
 
+        if (++m_Retries > 30)
+        {
+            g_KillAll = 1;
+            return;
+        }
+
         if (!m_bConnecting && !m_bConnecting)
         {
             // reconnect
@@ -282,7 +298,7 @@ private:
         connection_ptr con = m_WebSocket.get_con_from_hdl(hdl);
 
         m_bConnected = false;
-        smutils->LogMessage(myself, "Server \"%s\" closed connection_hdl: %s", g_Socket_Url.c_str(), con->get_remote_close_reason().c_str());
+        smutils->LogError(myself, "Server \"%s\" closed connection_hdl: %s", g_Socket_Url.c_str(), con->get_remote_close_reason().c_str());
 
         if (!m_WebSocket.stopped())
         {
@@ -340,6 +356,7 @@ bool WebSocketAvailable()
 {
     return wsclient.Available();
 }
+
 
 cell_t Native_IsConnected(IPluginContext *pContext, const cell_t *params)
 {

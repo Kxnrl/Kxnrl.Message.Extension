@@ -63,6 +63,10 @@ enum Message_Type
     Vip_LoadAll         = 602,
     Vip_FromClient      = 603,
 
+    // User options
+    Opts_LoadUser       = 701,
+    Opts_SaveUser       = 702,
+
     /* Analytics */
     
     // Global

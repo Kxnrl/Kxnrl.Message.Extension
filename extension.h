@@ -24,6 +24,7 @@ public:
     }
 };
 
+extern uint8_t g_KillAll;
 extern string g_Socket_Url;
 extern string g_Socket_Key;
 extern HandleType_t g_MessageHandleType;

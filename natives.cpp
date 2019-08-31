@@ -72,7 +72,7 @@ cell_t Native_Send(IPluginContext *pContext, const cell_t *params)
 {
     Handle_t hndl = static_cast<Handle_t>(params[1]);
     HandleError err;
-    HandleSecurity sec = HandleSecurity(NULL, myself->GetIdentity());
+    HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), myself->GetIdentity());
 
     KMessage *message;
     if ((err = handlesys->ReadHandle(hndl, g_MessageHandleType, &sec, (void **)&message)) != HandleError_None)
@@ -87,7 +87,10 @@ cell_t Native_Send(IPluginContext *pContext, const cell_t *params)
     if (params[2])
     {
         // release handle
-        handlesys->FreeHandle(hndl, &sec);
+        if ((err = handlesys->FreeHandle(hndl, &sec)) != HandleError_None)
+        {
+            return pContext->ThrowNativeError("Failed to close Message handle %x (error %d)", hndl, err);
+        }
     }
 
     return Send(json);

@@ -9,7 +9,7 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Kxnrl.Message"
 #define SMEXT_CONF_DESCRIPTION	"WebSocket Message for SourceMod"
-#define SMEXT_CONF_VERSION		"1.0.3"
+#define SMEXT_CONF_VERSION		"1.0.4"
 #define SMEXT_CONF_AUTHOR		"Kyle \"Kxnrl\" Frankiss"
 #define SMEXT_CONF_URL			"https://www.kxnrl.com/"
 #define SMEXT_CONF_LOGTAG		"KMessage"
@@ -30,7 +30,7 @@
 /** Enable interfaces you want to use here by uncommenting lines */
 #define SMEXT_ENABLE_FORWARDSYS
 #define SMEXT_ENABLE_HANDLESYS
-//#define SMEXT_ENABLE_PLAYERHELPERS
+#define SMEXT_ENABLE_PLAYERHELPERS
 //#define SMEXT_ENABLE_DBMANAGER
 //#define SMEXT_ENABLE_GAMECONF
 //#define SMEXT_ENABLE_MEMUTILS
