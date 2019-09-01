@@ -18,9 +18,6 @@ string g_Socket_Url;
 string g_Socket_Key;
 tQueue g_tRecvQueue;
 
-// shutdown
-uint8_t g_KillAll;
-
 // Ext
 kMessage g_kMessage;
 SMEXT_LINK(&g_kMessage);
@@ -38,7 +35,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     g_fwdOnMessage = forwards->CreateForward("OnMessageReceived", ET_Ignore, 1, NULL, Param_Cell);
     if (!g_fwdOnMessage)
     {
-        smutils->Format(error, maxlength, "Failed to create forward 'kMessager_OnRecv'.");
+        smutils->Format(error, maxlength, "Failed to create forward 'OnMessageReceived'.");
         return false;
     }
 
@@ -127,32 +124,6 @@ void kMessage::SDK_OnUnload()
 
 void OnGameFrame(bool simulating)
 {
-    if (g_KillAll == 1)
-    {
-        smutils->LogError(myself, "Failed to connect to socket server with too many retires. shutdown server...");
-
-        IGamePlayer *pPlayer;
-        for (int client = 1; client <= playerhelpers->GetMaxClients(); ++client)
-        {
-            pPlayer = playerhelpers->GetGamePlayer(client);
-
-            if (!pPlayer || !pPlayer->IsConnected() || pPlayer->IsInKickQueue())
-            {
-                continue;
-            }
-
-            pPlayer->Kick("服务器发生致命错误即将重新启动.\n请1分钟后尝试重新连接服务器.");
-        }
-
-        g_KillAll++;
-        return;
-    }
-
-    if (g_KillAll == 2)
-    {
-        gamehelpers->ServerCommand("_restart");
-    }
-
 begin:
     if (g_tRecvQueue.empty())
         return;

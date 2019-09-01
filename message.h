@@ -177,11 +177,6 @@ public:
 
     int32_t ArraySize(const char *key)
     {
-        if (!m_ArrayMode || !m_ArrayKey[0])
-        {
-            return 0;
-        }
-
         return m_RawJson["Message_Data"][m_ArrayKey].size();
     }
 
@@ -370,12 +365,12 @@ public:
 
     bool ReadArrayNext()
     {
-        return m_RawJson["Message_Data"].isValidIndex(++m_ArrayIndex);
+        return m_RawJson["Message_Data"][m_ArrayKey].isValidIndex(++m_ArrayIndex);
     }
 
     void ReadArrayEnd()
     {
-        m_ArrayMode = true;
+        m_ArrayMode = false;
     }
 };
 

@@ -132,7 +132,7 @@ private:
     bool m_bClosing = false;
     std::queue<string> m_bQueue;
     typedef WebSocketClient self;
-    uint8_t m_Retries = 0;
+    uint16_t m_Retries = 0;
 
     /* Init WebSocket */
     void Init(bool init = false)
@@ -180,7 +180,6 @@ private:
         {
             m_bConnecting = false;
             smutils->LogError(myself, "[FATAL ERROR]  Failed to create connection_hdl to '%s': %s", g_Socket_Url.c_str(), ec.message().c_str());
-            g_KillAll = 1;
             return;
         }
 
@@ -203,7 +202,7 @@ private:
         {
             // flag
             m_bConnecting = true;
-            printf_s("%sSocket connecting to \"%s\"...\n", THIS_PREFIX, g_Socket_Url.c_str());
+            printf_s("%s #%d Socket connecting to \"%s\"...\n", THIS_PREFIX, m_Retries, g_Socket_Url.c_str());
 
             // go
             m_WebSocket.connect(m_Connection_ptr);
@@ -254,7 +253,6 @@ private:
             Send(data);
         }
 
-        m_Retries = 0;
         g_LastSent = time(NULL);
         g_HeartBeat = timersys->CreateTimer(&g_HeartBeatTimer, 1.0f, NULL, TIMER_FLAG_REPEAT);
     }
@@ -278,12 +276,6 @@ private:
             // reset
             timersys->KillTimer(g_HeartBeat);
             g_HeartBeat = NULL;
-        }
-
-        if (++m_Retries > 30)
-        {
-            g_KillAll = 1;
-            return;
         }
 
         if (!m_bConnecting && !m_bConnecting)
