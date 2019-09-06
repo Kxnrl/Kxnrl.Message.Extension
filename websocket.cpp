@@ -101,6 +101,7 @@ public:
         m_WebSocket.send(m_Connection_hdl, message, opcode::text, ec);
         if (ec)
         {
+            m_bQueue.push(message);
             smutils->LogError(myself, "Failed to send message to server: %s -> [%s]", ec.message().c_str(), message.c_str());
             return false;
         }
@@ -321,6 +322,14 @@ private:
         }
 
         PushMessage(msg->get_payload());
+
+        // push all local storage
+        while (!m_bQueue.empty())
+        {
+            auto data = m_bQueue.front();
+            m_bQueue.pop();
+            Send(data);
+        }
     }
 } wsclient;
 

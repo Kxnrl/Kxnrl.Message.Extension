@@ -37,6 +37,7 @@ enum Message_Type
     Broadcast_QQBot     = 303,
     Broadcast_Wedding   = 304,
     Broadcast_Other     = 305,
+    Broadcast_NextMap   = 306,
 
     // Baning
     Ban_LoadAdmins      = 401,
