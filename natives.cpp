@@ -57,11 +57,11 @@ cell_t Native_Message(IPluginContext *pContext, const cell_t *params)
         return pContext->ThrowNativeError("Message type %d is undefined.", type);
     }
 
-    HandleError he;
+    HandleError he = HandleError_None;
     Handle_t handle = handlesys->CreateHandle(g_MessageHandleType, message, pContext->GetIdentity(), myself->GetIdentity(), &he);
-    if (he != HandleError_None)
+    if (!handle || he != HandleError_None)
     {
-        return pContext->ThrowNativeError("Failed to create message handle: error %d", he);
+        return pContext->ThrowNativeError("Failed to create message handle: error #%d", he);
     }
     return handle;
 }

@@ -164,6 +164,7 @@ public:
         m_ArrayIndex = 0;
         m_MsgType = type;
         m_RawJson["Message_Type"] = (int16_t)m_MsgType;
+        success = true;
     }
 
     // recv from server
