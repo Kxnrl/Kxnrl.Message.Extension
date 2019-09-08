@@ -140,10 +140,6 @@ begin:
         goto begin;
     }
 
-    //printf_s("\n\nRecv Message: \n");
-    //printf_s(message->JsonString().c_str());
-    //printf_s("\n\n");
-
     Handle_t handle = handlesys->CreateHandle(g_MessageHandleType, message, NULL, myself->GetIdentity(), NULL);
 
     g_fwdOnMessage->PushCell(handle);

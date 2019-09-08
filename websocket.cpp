@@ -358,7 +358,6 @@ bool WebSocketAvailable()
     return wsclient.Available();
 }
 
-
 cell_t Native_IsConnected(IPluginContext *pContext, const cell_t *params)
 {
     return WebSocketAvailable();

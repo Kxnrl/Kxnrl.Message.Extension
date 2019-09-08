@@ -47,9 +47,23 @@ cell_t Native_Message(IPluginContext *pContext, const cell_t *params)
         return pContext->ThrowNativeError("Invalid Message_Type given -> %d", params[1]);
     }
 
-    KMessage *message = new KMessage((Message_Type)params[1]);
+    Message_Type type = (Message_Type)params[1];
 
-    return handlesys->CreateHandle(g_MessageHandleType, message, pContext->GetIdentity(), myself->GetIdentity(), NULL);
+    bool success = false;
+    KMessage *message = new KMessage(type, success);
+    if (!success)
+    {
+        delete message;
+        return pContext->ThrowNativeError("Message type %d is undefined.", type);
+    }
+
+    HandleError he;
+    Handle_t handle = handlesys->CreateHandle(g_MessageHandleType, message, pContext->GetIdentity(), myself->GetIdentity(), &he);
+    if (he != HandleError_None)
+    {
+        return pContext->ThrowNativeError("Failed to create message handle: error %d", he);
+    }
+    return handle;
 }
 
 cell_t Native_MsgType(IPluginContext *pContext, const cell_t *params)

@@ -26,6 +26,7 @@ enum Message_Type
     Server_Query        = 106,
     Server_PushError    = 107,
     Server_PushLog      = 108,
+    Server_PushGithub   = 109,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -141,9 +142,24 @@ public:
         return Json::writeString(m_Writer, m_RawJson);
     };
 
-    // create from plugin
+    // create from self
     KMessage(Message_Type type)
     {
+        m_ArrayMode = false;
+        m_ArrayIndex = 0;
+        m_MsgType = type;
+        m_RawJson["Message_Type"] = (int16_t)m_MsgType;
+    }
+
+    // create from plugin
+    KMessage(Message_Type type, bool &success)
+    {
+        if (!IsValidType(type))
+        {
+            success = false;
+            return;
+        }
+
         m_ArrayMode = false;
         m_ArrayIndex = 0;
         m_MsgType = type;
@@ -167,6 +183,14 @@ public:
         }
 
         m_MsgType = (Message_Type)m_RawJson["Message_Type"].asInt();
+
+        if (!IsValidType(m_MsgType))
+        {
+            success = false;
+            smutils->LogError(myself, "Failed to crate message: type %d is undefined.\nJson String:\n%s", m_MsgType, json.c_str());
+            return;
+        }
+
         m_ArrayMode = false;
         m_ArrayIndex = 0;
     }
@@ -372,6 +396,85 @@ public:
     void ReadArrayEnd()
     {
         m_ArrayMode = false;
+    }
+
+private:
+
+    bool IsValidType(Message_Type type)
+    {
+        switch (type)
+        {
+        case Message_Type::PingPong:
+        case Message_Type::HeartBeat:
+        case Message_Type::Server_Load:
+        case Message_Type::Server_Update:
+        case Message_Type::Server_Start:
+        case Message_Type::Server_StartMap:
+        case Message_Type::Server_EndMap:
+        case Message_Type::Server_Query:
+        case Message_Type::Server_PushError:
+        case Message_Type::Server_PushLog:
+        case Message_Type::Server_PushGithub:
+        case Message_Type::Forums_LoadUser:
+        case Message_Type::Forums_LoadAll:
+        case Message_Type::Broadcast_Chat:
+        case Message_Type::Broadcast_Admin:
+        case Message_Type::Broadcast_QQBot:
+        case Message_Type::Broadcast_Wedding:
+        case Message_Type::Broadcast_Other:
+        case Message_Type::Broadcast_NextMap:
+        case Message_Type::Ban_LoadAdmins:
+        case Message_Type::Ban_LoadAll:
+        case Message_Type::Ban_CheckUser:
+        case Message_Type::Ban_InsertIdentity:
+        case Message_Type::Ban_InsertComms:
+        case Message_Type::Ban_UnbanIdentity:
+        case Message_Type::Ban_UnbanComms:
+        case Message_Type::Ban_RefreshAdmins:
+        case Message_Type::Ban_LogAdminAction:
+        case Message_Type::Ban_LogBlocks:
+        case Message_Type::Couple_LoadAll:
+        case Message_Type::Couple_LoadUser:
+        case Message_Type::Couple_Update:
+        case Message_Type::Couple_Wedding:
+        case Message_Type::Couple_Divorce:
+        case Message_Type::Couple_MarriageSeek:
+        case Message_Type::Vip_LoadUser:
+        case Message_Type::Vip_LoadAll:
+        case Message_Type::Vip_FromClient:
+        case Message_Type::Opts_LoadUser:
+        case Message_Type::Opts_SaveUser:
+        case Message_Type::Stats_LoadUser:
+        case Message_Type::Stats_Analytics:
+        case Message_Type::Stats_Update:
+        case Message_Type::Stats_DailySignIn:
+        case Message_Type::Stats_MG_LoadUser:
+        case Message_Type::Stats_MG_Update:
+        case Message_Type::Stats_MG_Session:
+        case Message_Type::Stats_MG_Trace:
+        case Message_Type::Stats_MG_Ranking:
+        case Message_Type::Stats_MG_Details:
+        case Message_Type::Stast_ZE_LoadUser:
+        case Message_Type::Stast_ZE_Update:
+        case Message_Type::Stats_ZE_Session:
+        case Message_Type::Stats_ZE_Ranking:
+        case Message_Type::Stats_ZE_Details:
+        case Message_Type::Stats_TT_LoadUser:
+        case Message_Type::Stats_TT_Update:
+        case Message_Type::Stats_TT_Session:
+        case Message_Type::Stats_L2_LoadUser:
+        case Message_Type::Stats_L2_Update:
+        case Message_Type::Stats_L2_Session:
+        case Message_Type::Stats_IS_LoadUser:
+        case Message_Type::Stats_IS_Update:
+        case Message_Type::Stats_IS_Session:
+        case Message_Type::Stats_IS_Ranking:
+        case Message_Type::Stats_IS_Trace:
+        case Message_Type::Stats_IS_LoadAll:
+            return true;
+        }
+
+        return false;
     }
 };
 
