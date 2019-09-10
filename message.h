@@ -310,7 +310,7 @@ public:
      */
     bool ReadBool(const char *key)
     {
-        Json::Value json = m_ArrayMode ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][key];
+        Json::Value json = m_ArrayMode ? (strlen(key) > 0 ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex]) : m_RawJson["Message_Data"][key];
 
         if (json.isConvertibleTo(Json::ValueType::booleanValue))
         {
@@ -327,7 +327,7 @@ public:
 
     int16_t ReadShort(const char *key)
     {
-        Json::Value json = m_ArrayMode ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][key];
+        Json::Value json = m_ArrayMode ? (strlen(key) > 0 ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex]) : m_RawJson["Message_Data"][key];
 
         if (!json.isNumeric())
         {
@@ -346,7 +346,7 @@ public:
 
     int32_t ReadInt32(const char *key)
     {
-        Json::Value json = m_ArrayMode ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][key];
+        Json::Value json = m_ArrayMode ? (strlen(key) > 0 ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex]) : m_RawJson["Message_Data"][key];
 
         if (!json.isNumeric())
         {
@@ -365,19 +365,19 @@ public:
 
     int64_t ReadInt64(const char *key)
     {
-        Json::Value json = m_ArrayMode ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][key];
+        Json::Value json = m_ArrayMode ? (strlen(key) > 0 ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex]) : m_RawJson["Message_Data"][key];
         return json.isInt64() ? json.asInt64() : atoll(json.asCString());
     }
 
     float ReadFloat(const char *key)
     {
-        Json::Value json = m_ArrayMode ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][key];
+        Json::Value json = m_ArrayMode ? (strlen(key) > 0 ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex]) : m_RawJson["Message_Data"][key];
         return json.asFloat();
     }
 
     string ReadString(const char *key)
     {
-        Json::Value json = m_ArrayMode ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][key];
+        Json::Value json = m_ArrayMode ? (strlen(key) > 0 ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex]) : m_RawJson["Message_Data"][key];
         return json.asString();
     }
 
