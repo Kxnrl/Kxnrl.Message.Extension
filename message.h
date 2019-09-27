@@ -27,6 +27,7 @@ enum Message_Type
     Server_PushError    = 107,
     Server_PushLog      = 108,
     Server_PushGithub   = 109,
+    Server_PushChatLog  = 110,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -84,9 +85,9 @@ enum Message_Type
     Store_PurchaseItem  = 921,
     Store_SellItem      = 922,
     Store_GiveItem      = 923,
-    Store_GiftItem      = 923,
-    Store_ExtendItem    = 924,
-    Store_RemoveItem    = 925,
+    Store_GiftItem      = 924,
+    Store_ExtendItem    = 925,
+    Store_RemoveItem    = 926,
     
     // Equipments
     Store_EquipItem     = 931,
@@ -442,6 +443,7 @@ private:
         case Message_Type::Server_PushError:
         case Message_Type::Server_PushLog:
         case Message_Type::Server_PushGithub:
+        case Message_Type::Server_PushChatLog:
         case Message_Type::Forums_LoadUser:
         case Message_Type::Forums_LoadAll:
         case Message_Type::Broadcast_Chat:
@@ -450,6 +452,7 @@ private:
         case Message_Type::Broadcast_Wedding:
         case Message_Type::Broadcast_Other:
         case Message_Type::Broadcast_NextMap:
+        case Message_Type::Broadcast_Horn:
         case Message_Type::Ban_LoadAdmins:
         case Message_Type::Ban_LoadAll:
         case Message_Type::Ban_CheckUser:
@@ -471,6 +474,20 @@ private:
         case Message_Type::Vip_FromClient:
         case Message_Type::Opts_LoadUser:
         case Message_Type::Opts_SaveUser:
+        case Message_Type::Store_Load:
+        case Message_Type::Store_LoadUser:
+        case Message_Type::Store_EarnCredits:
+        case Message_Type::Store_CostCredits:
+        case Message_Type::Store_SetsCredits:
+        case Message_Type::Store_PurchaseItem:
+        case Message_Type::Store_SellItem:
+        case Message_Type::Store_GiveItem:
+        case Message_Type::Store_GiftItem:
+        case Message_Type::Store_ExtendItem:
+        case Message_Type::Store_RemoveItem:
+        case Message_Type::Store_EquipItem:
+        case Message_Type::Store_UnequipItem:
+        case Message_Type::Store_ExtraLog:
         case Message_Type::Stats_LoadUser:
         case Message_Type::Stats_Analytics:
         case Message_Type::Stats_Update:

@@ -25,7 +25,6 @@ public:
 };
 
 extern string g_Socket_Url;
-extern string g_Socket_Key;
 extern HandleType_t g_MessageHandleType;
 
 void PushMessage(string message);

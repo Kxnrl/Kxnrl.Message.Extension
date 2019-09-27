@@ -15,7 +15,6 @@ IForward *g_fwdOnMessage = NULL;
 
 // socket
 string g_Socket_Url;
-string g_Socket_Key;
 tQueue g_tRecvQueue;
 
 // Ext
@@ -51,20 +50,6 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     {
         g_Socket_Url = uri;
         printf_s("%sSocket uri [%s]...\n", THIS_PREFIX, uri);
-    }
-
-    // Key
-    printf_s("%sInit socket cipher...\n", THIS_PREFIX);
-    const char *key = smutils->GetCoreConfigValue("WebSocket_Key");
-    if (key == NULL)
-    {
-        g_Socket_Key = string(WEBSOCKET_SERVER_SECRETS);
-        smutils->LogMessage(myself, "[Connect] Key 'WebSocket_Key' does not exists in core.cfg, use default key '%s'.", WEBSOCKET_SERVER_SECRETS);
-    }
-    else
-    {
-        g_Socket_Key = key;
-        printf_s("%sSocket cipher [%s]...\n", THIS_PREFIX, key);
     }
 
     // Interval
