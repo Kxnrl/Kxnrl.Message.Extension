@@ -3,7 +3,6 @@
 
 #include <string>
 #include "smsdk_ext.h"
-#include "message.h"
 
 class      kMessage : 
     public SDKExtension
@@ -14,20 +13,10 @@ public:
     virtual void SDK_OnUnload();
 };
 
-class MessageTypeHandler : 
-    public IHandleTypeDispatch
-{
-public:
-    void OnHandleDestroy(HandleType_t type, void *object)
-    {
-        delete (KMessage *)object;
-    }
-};
-
-extern string g_Socket_Url;
+extern std::string g_Socket_Url;
 extern HandleType_t g_MessageHandleType;
 
-void PushMessage(string message);
+void PushMessage(std::string message);
 
 #define THIS_PREFIX "[Kxnrl.Message]      "
 

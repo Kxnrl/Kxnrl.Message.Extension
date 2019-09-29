@@ -522,4 +522,14 @@ private:
     }
 };
 
+class MessageTypeHandler :
+    public IHandleTypeDispatch
+{
+public:
+    void OnHandleDestroy(HandleType_t type, void *object)
+    {
+        delete (KMessage *)object;
+    }
+};
+
 #endif // ! __KMESSAGE_MESSAGE_INCLUDE__
