@@ -26,6 +26,10 @@ enum Message_Type
     Server_StartMap     = 104,
     Server_EndMap       = 105,
     Server_Query        = 106,
+    Server_PushError    = 107,
+    Server_PushLog      = 108,
+    Server_PushGithub   = 109,
+    Server_PushChatLog  = 110,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -37,6 +41,8 @@ enum Message_Type
     Broadcast_QQBot     = 303,
     Broadcast_Wedding   = 304,
     Broadcast_Other     = 305,
+    Broadcast_NextMap   = 306,
+    Broadcast_Horn      = 307,
 
     // Baning
     Ban_LoadAdmins      = 401,
@@ -63,10 +69,34 @@ enum Message_Type
     Vip_LoadAll         = 602,
     Vip_FromClient      = 603,
 
-    /* Client */
-    Client_ForwardUser  = 701,
-    Client_HeartBeat    = 702,
-    Client_S2S          = 703,
+    // User options
+    Opts_LoadUser       = 701,
+    Opts_SaveUser       = 702,
+
+    /* Store */
+    // Load
+    Store_Load          = 900,
+    Store_LoadUser      = 901,
+
+    // Credits
+    Store_EarnCredits   = 911,
+    Store_CostCredits   = 912,
+    Store_SetsCredits   = 913,
+
+    // Items
+    Store_PurchaseItem  = 921,
+    Store_SellItem      = 922,
+    Store_GiveItem      = 923,
+    Store_GiftItem      = 924,
+    Store_ExtendItem    = 925,
+    Store_RemoveItem    = 926,
+    
+    // Equipments
+    Store_EquipItem     = 931,
+    Store_UnequipItem   = 932,
+
+    // Extends
+    Store_ExtraLog      = 941,
 
     /* Analytics */
     
@@ -114,11 +144,6 @@ enum Message_Type
 };
 
 /**
- * Called when message received.
- */
-forward void OnMessageReceived(Message message);
-
-/**
  * Check service is available.
  */
 native bool KxnrlMessage_IsConnected();
@@ -138,8 +163,11 @@ methodmap Message < Handle
         public native get();
     }
 
-    // 发送消息 (发送后会自动销毁handle)
-    public native bool Send();
+    // 发送消息 (参数为true将会自动销毁此实例, 若不销毁可以重复使用)
+    public native bool Send(bool destroy = true);
+
+    // 原始Json
+    public native void RawJson(char[] buffer, int maxLen);
 
     // 检查数组长度
     public native int ArraySize(const char[] key);
@@ -176,6 +204,12 @@ methodmap Message < Handle
     public native void  ReadArrayEnd();
 }
 
+/**
+ * Called when message received.
+ */
+forward void OnMessageReceived(Message msg);
+
+
 public Extension __ext__Kxnrl_Message = 
 {
     name = "Kxnrl.Message",
@@ -198,6 +232,7 @@ public void __ext_Kxnrl_Message_SetNTVOptional()
     MarkNativeAsOptional("KxnrlMessage_IsConnected");
 
     MarkNativeAsOptional("Message.Message");
+    MarkNativeAsOptional("Message.Type.get");
     MarkNativeAsOptional("Message.Send");
 
     MarkNativeAsOptional("Message.ArraySize");
@@ -214,7 +249,6 @@ public void __ext_Kxnrl_Message_SetNTVOptional()
     MarkNativeAsOptional("Message.WriteString");
     MarkNativeAsOptional("Message.WriteArrayBegin");
     MarkNativeAsOptional("Message.WriteArrayEnd");
-
 
     MarkNativeAsOptional("Message.ReadBool");
     MarkNativeAsOptional("Message.ReadShort");
