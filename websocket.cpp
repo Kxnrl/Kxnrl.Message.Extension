@@ -196,7 +196,7 @@ private:
             return false;
 
         // sleep
-        threader->ThreadSleep(reconnect ? 10000u : 5000u);
+        threader->ThreadSleep(reconnect ? 8000u : 10u);
 
         // Connection
         try

@@ -100,7 +100,7 @@ enum Message_Type
     
     // Global
     Stats_LoadUser      = 1001,
-    Stats_Analytics     = 1002,
+    Stats_Analytics     = 1002, // deprecated
     Stats_Update        = 1003,
     Stats_DailySignIn   = 1004,
 
