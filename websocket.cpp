@@ -111,6 +111,7 @@ public:
     void Shutdown()
     {
         m_bClosing = true;
+        printf_s("%s Shutdown websocket client.\n", THIS_PREFIX);
 
         if (m_bConnected)
         {
@@ -184,8 +185,14 @@ private:
             return;
         }
 
+        if (++m_Retries >= 50)
+        {
+            // restart server.
+            gamehelpers->ServerCommand("exit\n");
+            return;
+        }
+
         // Connect
-        m_Retries++;
         Connect(!init);
     }
 
@@ -193,7 +200,10 @@ private:
     {
     retry:
         if (m_bClosing)
+        {
+            printf_s("%s OnClosing, DO NOT make connection.\n", THIS_PREFIX);
             return false;
+        }
 
         // sleep
         threader->ThreadSleep(reconnect ? 8000u : 10u);
@@ -224,6 +234,7 @@ private:
     void Disconnect()
     {
         m_bClosing = true;
+        printf_s("%s Disconnecting...\n", THIS_PREFIX);
 
         if (m_bConnected)
         {
