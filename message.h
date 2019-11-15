@@ -66,6 +66,7 @@ enum Message_Type
     Vip_LoadUser        = 601,
     Vip_LoadAll         = 602,
     Vip_FromClient      = 603,
+    Vip_Purchase        = 604,
 
     // User options
     Opts_LoadUser       = 701,
@@ -472,6 +473,7 @@ private:
         case Message_Type::Vip_LoadUser:
         case Message_Type::Vip_LoadAll:
         case Message_Type::Vip_FromClient:
+        case Message_Type::Vip_Purchase:
         case Message_Type::Opts_LoadUser:
         case Message_Type::Opts_SaveUser:
         case Message_Type::Store_Load:

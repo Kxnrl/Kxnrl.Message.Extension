@@ -85,14 +85,14 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     sharesys->AddNatives(myself, WebSocketNatives);
     sharesys->AddNatives(myself, MessageNatives);
 
-    smutils->AddGameFrameHook(OnGameFrame);
+    smutils->AddGameFrameHook(&OnGameFrame);
 
     return true;
 }
 
 void kMessage::SDK_OnUnload()
 {
-    Shutdown();
+    smutils->RemoveGameFrameHook(&OnGameFrame);
 
     if (g_fwdOnMessage)
     {
@@ -102,6 +102,7 @@ void kMessage::SDK_OnUnload()
 
     if (websocket_thread != NULL)
     {
+        Shutdown();
         websocket_thread->WaitForThread();
         websocket_thread->DestroyThis();
     }
