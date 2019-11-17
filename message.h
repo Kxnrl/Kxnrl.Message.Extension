@@ -231,7 +231,7 @@ public:
 
     int32_t ArraySize(const char *key)
     {
-        return m_RawJson["Message_Data"][m_ArrayKey].size();
+        return m_RawJson["Message_Data"][key].size();
     }
 
     void JumpArray(int32_t index)
