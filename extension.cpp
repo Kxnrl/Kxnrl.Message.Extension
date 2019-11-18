@@ -22,7 +22,7 @@ kMessage g_kMessage;
 SMEXT_LINK(&g_kMessage);
 
 void OnGameFrame(bool simualting);
-
+bool g_bRequireRestart = false;
 
 MessageTypeHandler g_MessageTypeHandler;
 HandleType_t g_MessageHandleType;
@@ -110,6 +110,12 @@ void kMessage::SDK_OnUnload()
 
 void OnGameFrame(bool simulating)
 {
+    if (g_bRequireRestart)
+    {
+        gamehelpers->ServerCommand("exit\n");
+        return;
+    }
+
 begin:
     if (g_tRecvQueue.empty())
         return;

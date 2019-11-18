@@ -28,6 +28,7 @@ enum Message_Type
     Server_PushLog      = 108,
     Server_PushGithub   = 109,
     Server_PushChatLog  = 110,
+    Server_GroupManager = 111,
 
     // Forums
     Forums_LoadUser     = 201,

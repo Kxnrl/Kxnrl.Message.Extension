@@ -188,7 +188,7 @@ private:
         if (++m_Retries >= 50)
         {
             // restart server.
-            gamehelpers->ServerCommand("exit\n");
+            g_bRequireRestart = true;
             return;
         }
 
