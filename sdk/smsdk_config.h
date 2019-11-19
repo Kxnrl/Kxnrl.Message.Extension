@@ -9,7 +9,7 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Kxnrl.Message"
 #define SMEXT_CONF_DESCRIPTION	"WebSocket Message for SourceMod"
-#define SMEXT_CONF_VERSION		"1.0.10"
+#define SMEXT_CONF_VERSION		"1.0.11"
 #define SMEXT_CONF_AUTHOR		"Kyle (4y)"
 #define SMEXT_CONF_URL			"https://www.kxnrl.com/"
 #define SMEXT_CONF_LOGTAG		"Kxnrl.Message"

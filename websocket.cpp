@@ -1,9 +1,10 @@
 #include "extension.h"
 #include "websocket.h"
 #include "message.h"
-
+#include <map>
 #include <chrono>
 #include <stdlib.h>
+#include <unordered_map>
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
 
@@ -91,8 +92,7 @@ public:
     {
         if (!Available())
         {
-            m_bQueue.push(message);
-            smutils->LogMessage(myself, "Socket is unavailable now. Push data to queue.");
+            SaveQueue(message);
             return false;
         }
 
@@ -101,7 +101,7 @@ public:
         m_WebSocket.send(m_Connection_hdl, message, opcode::text, ec);
         if (ec)
         {
-            m_bQueue.push(message);
+            SaveQueue(message);
             smutils->LogError(myself, "Failed to send message to server: %s -> [%s]", ec.message().c_str(), message.c_str());
             return false;
         }
@@ -126,13 +126,40 @@ public:
     }
 
 private:
+    void SaveQueue(string message)
+    {
+        if (m_bQueue.find(message) == m_bQueue.end())
+        {
+            m_bQueue[message] = true;
+            smutils->LogMessage(myself, "Socket is unavailable now. Push data to queue. -> %s", message.c_str());
+        }
+        else
+        {
+            smutils->LogMessage(myself, "Socket is unavailable now. but data is already in queue. -> %s", message.c_str());
+        }
+    }
+
+    void PushQueue()
+    {
+        // push all local storage
+        if (m_bQueue.size() <= 0)
+            return;
+
+        for (auto iter = m_bQueue.begin(); iter != m_bQueue.end();)
+        {
+            Send(iter->first);
+            iter = m_bQueue.erase(iter);
+        }
+    }
+
+private:
     client m_WebSocket;
     connection_hdl m_Connection_hdl;
     connection_ptr m_Connection_ptr;
     bool m_bConnected = false;
     bool m_bConnecting = false;
     bool m_bClosing = false;
-    std::queue<string> m_bQueue;
+    std::unordered_map<string, bool> m_bQueue;
     typedef WebSocketClient self;
     uint16_t m_Retries = 0;
 
@@ -258,12 +285,7 @@ private:
         smutils->LogMessage(myself, "Socket conneted to \"%s\".", g_Socket_Url.c_str());
 
         // push all local storage
-        while (!m_bQueue.empty())
-        {
-            auto data = m_bQueue.front();
-            m_bQueue.pop();
-            Send(data);
-        }
+        PushQueue();
 
         g_LastSent = time(NULL);
         g_HeartBeat = timersys->CreateTimer(&g_HeartBeatTimer, 1.0f, NULL, TIMER_FLAG_REPEAT);
@@ -334,13 +356,7 @@ private:
 
         PushMessage(msg->get_payload());
 
-        // push all local storage
-        while (!m_bQueue.empty())
-        {
-            auto data = m_bQueue.front();
-            m_bQueue.pop();
-            Send(data);
-        }
+        PushQueue();
     }
 } wsclient;
 
