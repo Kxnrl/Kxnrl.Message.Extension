@@ -212,7 +212,7 @@ private:
             return;
         }
 
-        if (++m_Retries >= 50)
+        if (++m_Retries >= 50 || g_bRequireRestart)
         {
             // restart server.
             g_bRequireRestart = true;

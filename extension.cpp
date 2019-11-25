@@ -113,6 +113,7 @@ void OnGameFrame(bool simulating)
     if (g_bRequireRestart)
     {
         gamehelpers->ServerCommand("exit\n");
+        g_bRequireRestart = false;
         return;
     }
 
