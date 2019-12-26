@@ -28,8 +28,7 @@ enum Message_Type
     Server_PushLog      = 108,
     Server_PushGithub   = 109,
     Server_PushChatLog  = 110,
-    Server_GroupManager = 111,
-    Server_PushClients  = 112,
+    Server_PushClients  = 111,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -73,6 +72,12 @@ enum Message_Type
     // User options
     Opts_LoadUser       = 701,
     Opts_SaveUser       = 702,
+
+    // Authorized
+    Auth_GetAuthList    = 801,
+    Auth_GetUserAuth    = 802,
+    Auth_GetAll         = 803,
+    Auth_RequestAuth    = 804,
 
     /* Store */
     // Load
@@ -447,6 +452,7 @@ private:
         case Message_Type::Server_PushLog:
         case Message_Type::Server_PushGithub:
         case Message_Type::Server_PushChatLog:
+        case Message_Type::Server_PushClients:
         case Message_Type::Forums_LoadUser:
         case Message_Type::Forums_LoadAll:
         case Message_Type::Broadcast_Chat:
@@ -478,6 +484,10 @@ private:
         case Message_Type::Vip_Purchase:
         case Message_Type::Opts_LoadUser:
         case Message_Type::Opts_SaveUser:
+        case Message_Type::Auth_GetAuthList:
+        case Message_Type::Auth_GetUserAuth:
+        case Message_Type::Auth_GetAll:
+        case Message_Type::Auth_RequestAuth:
         case Message_Type::Store_Load:
         case Message_Type::Store_LoadUser:
         case Message_Type::Store_EarnCredits:
