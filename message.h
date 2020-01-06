@@ -29,6 +29,7 @@ enum Message_Type
     Server_PushGithub   = 109,
     Server_PushChatLog  = 110,
     Server_PushClients  = 111,
+    Server_PushEvents   = 112,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -453,6 +454,7 @@ private:
         case Message_Type::Server_PushGithub:
         case Message_Type::Server_PushChatLog:
         case Message_Type::Server_PushClients:
+        case Message_Type::Server_PushEvents:
         case Message_Type::Forums_LoadUser:
         case Message_Type::Forums_LoadAll:
         case Message_Type::Broadcast_Chat:
