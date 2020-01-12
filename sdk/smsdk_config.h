@@ -7,14 +7,14 @@
  */
 
 /* Basic information exposed publicly */
-#define SMEXT_CONF_NAME			"Kxnrl.Message"
-#define SMEXT_CONF_DESCRIPTION	"WebSocket Message for SourceMod"
-#define SMEXT_CONF_VERSION		"1.0.12"
-#define SMEXT_CONF_AUTHOR		"Kyle (4y)"
-#define SMEXT_CONF_URL			"https://www.kxnrl.com/"
-#define SMEXT_CONF_LOGTAG		"Kxnrl.Message"
-#define SMEXT_CONF_LICENSE		"GPL"
-#define SMEXT_CONF_DATESTRING	__DATE__
+#define SMEXT_CONF_NAME         "Kxnrl.Message"
+#define SMEXT_CONF_DESCRIPTION  "WebSocket Message for SourceMod"
+#define SMEXT_CONF_VERSION      "1.0.2020"
+#define SMEXT_CONF_AUTHOR       "Kyle (4y)"
+#define SMEXT_CONF_URL          "https://www.kxnrl.com/"
+#define SMEXT_CONF_LOGTAG       "Kxnrl.Message"
+#define SMEXT_CONF_LICENSE      "GPL"
+#define SMEXT_CONF_DATESTRING   __DATE__
 
 /**
  * @brief Exposes plugin's main interface.

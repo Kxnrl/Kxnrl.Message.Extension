@@ -30,6 +30,8 @@ enum Message_Type
     Server_PushChatLog  = 110,
     Server_PushClients  = 111,
     Server_PushEvents   = 112,
+    Server_PushMaps     = 113,
+    Server_LoadMaps     = 114,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -145,6 +147,12 @@ enum Message_Type
     Stats_IS_Ranking    = 1304,
     Stats_IS_Trace      = 1305,
     Stats_IS_LoadAll    = 1306,
+
+    /* Active */
+    Acts_LoadUser       = 1999,
+    Acts_SyncUser       = 1998,
+    Acts_UpdateUserTask = 1997,
+    Acts_Exchange       = 1996,
 
     // End
     MaxMessage          = 2000
@@ -455,6 +463,8 @@ private:
         case Message_Type::Server_PushChatLog:
         case Message_Type::Server_PushClients:
         case Message_Type::Server_PushEvents:
+        case Message_Type::Server_PushMaps:
+        case Message_Type::Server_LoadMaps:
         case Message_Type::Forums_LoadUser:
         case Message_Type::Forums_LoadAll:
         case Message_Type::Broadcast_Chat:
@@ -531,6 +541,10 @@ private:
         case Message_Type::Stats_IS_Ranking:
         case Message_Type::Stats_IS_Trace:
         case Message_Type::Stats_IS_LoadAll:
+        case Message_Type::Acts_LoadUser:
+        case Message_Type::Acts_SyncUser:
+        case Message_Type::Acts_UpdateUserTask:
+        case Message_Type::Acts_Exchange:
             return true;
         }
 
