@@ -153,6 +153,7 @@ enum Message_Type
     Acts_SyncUser       = 1998,
     Acts_UpdateUserTask = 1997,
     Acts_Exchange       = 1996,
+    Acts_Accomplished   = 1995,
 
     // End
     MaxMessage          = 2000
@@ -545,6 +546,7 @@ private:
         case Message_Type::Acts_SyncUser:
         case Message_Type::Acts_UpdateUserTask:
         case Message_Type::Acts_Exchange:
+        case Message_Type::Acts_Accomplished:
             return true;
         }
 
