@@ -12,10 +12,11 @@ branches:
   - /^(?i:release)-.*$/
 
 env:
+  global:
+   - DEPS_DIR=${HOME}/deps
+   - VCPKG_ROOT=${DEPS_DIR}/vcpkg
   - BRANCH=1.10-dev
   - BRANCH=master
-  - DEPS_DIR=${HOME}/deps
-  - VCPKG_ROOT=${DEPS_DIR}/vcpkg
 
 before_install:
   - git clone https://github.com/alliedmodders/ambuild ${DEPS_DIR}/ambuild
@@ -27,7 +28,8 @@ jobs:
   - stage: build
     os: linux
     env:
-     - VCPKG_TARGET_TRIPLET=x86-linux-sm
+      global:
+      - VCPKG_TARGET_TRIPLET=x86-linux-sm
     install:
      - |
        cd ${DEPS_DIR}/ambuild
@@ -42,6 +44,9 @@ jobs:
 
   - stage: build
     os: windows
+    env:
+      global:
+      - VCPKG_TARGET_TRIPLET=x86-windows-sm
     install:
       - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
       - |
