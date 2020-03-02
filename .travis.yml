@@ -30,15 +30,16 @@ jobs:
     python: 3.8
     env:
       - VCPKG_TARGET_TRIPLET=x86-linux-sm
-    install:
+    before_install:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - |
-        cd ${DEPS_DIR}/ambuild
+        pushd ${DEPS_DIR}/ambuild
         python setup.py install
+        popd
       - |
-        cd ${DEPS_DIR}/vcpkg
-        ./bootstrap.bat
-        ./vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
+        ${VCPKG_ROOT}/bootstrap.sh
+        ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
+
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
@@ -47,17 +48,17 @@ jobs:
     os: windows
     env:
       - VCPKG_TARGET_TRIPLET=x86-windows-sm
-      - PATH=/c/Python38:/c/Python38/Scripts:$PATH
-    install:
+      - PATH=/c/Python38:/c/Python38/Scripts:${PATH}
+    before_install:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
       - |
-        cd ${DEPS_DIR}/ambuild
+        pushd ${DEPS_DIR}/ambuild
         python setup.py install
+        popd
       - |
-        cd ${DEPS_DIR}/vcpkg
-        ./bootstrap.bat
-        ./vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
+        ${VCPKG_ROOT}/bootstrap.bat
+        ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.dll
@@ -65,18 +66,18 @@ jobs:
 script:
   - python ./build.py
 
-before_deploy:
-  # Set up git user name and tag this commit
-  - git config --local user.name "Kxnrl"
-  - git config --local user.email "kyle@kxnrl.com"
-  - export TRAVIS_TAG=deploy-$TRAVIS_BUILD_NUMBER
-  - git tag $TRAVIS_TAG
+#before_deploy:
+# # Set up git user name and tag this commit
+#  - git config --local user.name "Kxnrl"
+#  - git config --local user.email "kyle@kxnrl.com"
+#  - export TRAVIS_TAG=deploy-$TRAVIS_BUILD_NUMBER
+#  - git tag $TRAVIS_TAG
 
-deploy:
-  provider: releases
-  skip_cleanup: true
-  api_key: $TOKEN
-  on:
-      condition: "$BRANCH = 1.10-dev"
-      repo: Kxnrl/Kxnrl.Message.Extension
-      all_branches: true
+#deploy:
+#  provider: releases
+#  skip_cleanup: true
+#  api_key: $TOKEN
+#  on:
+#      condition: "$BRANCH = 1.10-dev"
+#      repo: Kxnrl/Kxnrl.Message.Extension
+#      all_branches: true
