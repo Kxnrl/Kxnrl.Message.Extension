@@ -2,6 +2,7 @@ language: cpp
 
 os:
   - windows
+  - linux
 
 branches:
   only:
@@ -14,11 +15,24 @@ env:
   - BRANCH=1.10-dev
   - BRANCH=master
 
-before_script:
-  - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
+jobs:
+  include:
+  - stage: build
+    os: linux
+    deploy:
+      file:
+        - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
+
+  - stage: build
+    os: windows
+    before_script:
+      - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
+    deploy:
+      file:
+        - build/package/addons/sourcemod/extensions/kxnrl.message.ext.dll
 
 script:
-  - ./build.bat
+  - python ./build.py
 
 before_deploy:
   # Set up git user name and tag this commit
@@ -31,8 +45,6 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key: $TOKEN
-  file:
-      - msvc15/Release/kxnrl.message.ext.dll
   on:
       condition: "$BRANCH = 1.10-dev"
       repo: Kxnrl/Kxnrl.Message.Extension
