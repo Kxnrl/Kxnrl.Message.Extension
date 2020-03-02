@@ -14,19 +14,43 @@ branches:
 env:
   - BRANCH=1.10-dev
   - BRANCH=master
+  - DEPS_DIR=${HOME}/deps
+  - VCPKG_ROOT=${DEPS_DIR}/vcpkg
+
+before_install:
+  - git clone https://github.com/alliedmodders/ambuild ${DEPS_DIR}/ambuild
+  - git clone https://github.com/Microsoft/vcpkg ${DEPS_DIR}/vcpkg
+  - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
 
 jobs:
   include:
   - stage: build
     os: linux
+    env:
+     - VCPKG_TARGET_TRIPLET=x86-linux-sm
+    install:
+     - |
+       cd ${DEPS_DIR}/ambuild
+       python setup.py install
+     - |
+       cd ${DEPS_DIR}/vcpkg
+       ./bootstrap.bat
+       ./vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
 
   - stage: build
     os: windows
-    before_script:
+    install:
       - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
+      - |
+        cd ${DEPS_DIR}/ambuild
+        python setup.py install
+      - |
+        cd ${DEPS_DIR}/vcpkg
+        ./bootstrap.bat
+        ./vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.dll
