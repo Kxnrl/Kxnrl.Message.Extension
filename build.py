@@ -17,7 +17,8 @@ subprocess.call(['git', 'clone', 'https://github.com/alliedmodders/sourcemod', '
 
 
 print('Install ambuild')
-subprocess.call(['python', os.path.join(EXT_DIR, 'ambuild', 'setup.py'), 'install'])
+os.chdir(os.path.join(EXT_DIR, 'ambuild'))
+subprocess.call(['python', 'setup.py', 'install'])
 
 
 print('Setup environment')
