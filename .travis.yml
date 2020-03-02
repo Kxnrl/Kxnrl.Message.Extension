@@ -31,7 +31,7 @@ jobs:
         python setup.py install
         popd
       - |
-        ${VCPKG_ROOT}/bootstrap.sh
+        ${VCPKG_ROOT}/bootstrap-vcpkg.sh
         ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
 
     deploy:
@@ -52,7 +52,7 @@ jobs:
         python setup.py install
         popd
       - |
-        ${VCPKG_ROOT}/bootstrap.bat
+        ${VCPKG_ROOT}/bootstrap-vcpkg.bat
         ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
     deploy:
       file:
