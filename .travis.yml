@@ -15,8 +15,9 @@ env:
   global:
    - DEPS_DIR=${HOME}/deps
    - VCPKG_ROOT=${DEPS_DIR}/vcpkg
-  - BRANCH=1.10-dev
-  - BRANCH=master
+  jobs:
+   - BRANCH=1.10-dev
+   - BRANCH=master
 
 before_install:
   - git clone https://github.com/alliedmodders/ambuild ${DEPS_DIR}/ambuild
