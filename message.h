@@ -3,9 +3,6 @@
 
 #include <string>
 #include "json/json.h"
-#include "smsdk_ext.h"
-
-typedef std::string string;
 
 enum Message_Type
 {
@@ -180,7 +177,7 @@ public:
 
 public:
 
-    string JsonString(bool pretty = false)
+    std::string JsonString(bool pretty = false)
     {
         Json::StreamWriterBuilder m_Writer;
         m_Writer["indentation"] = pretty ? "    " : "";
@@ -213,18 +210,18 @@ public:
     }
 
     // recv from server
-    KMessage(string json, bool &success)
+    KMessage(std::string json, bool &success)
     {
         Json::CharReaderBuilder m_Builder;
         Json::CharReader *m_Reader = m_Builder.newCharReader();
 
-        string errors;
+        std::string errors;
         success = m_Reader->parse(json.c_str(), json.c_str() + json.size(), &m_RawJson, &errors);
         delete m_Reader;
 
         if (!success)
         {
-            smutils->LogError(myself, "Failed to render json from string: %s\nJson String:\n%s", errors.c_str(), json.c_str());
+            smutils->LogError(myself, "Failed to render json from std::string: %s\nJson String:\n%s", errors.c_str(), json.c_str());
             return;
         }
 
@@ -420,7 +417,7 @@ public:
         return json.asFloat();
     }
 
-    string ReadString(const char *key)
+    std::string ReadString(const char *key)
     {
         Json::Value json = m_ArrayMode ? (strlen(key) > 0 ? m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] : m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex]) : m_RawJson["Message_Data"][key];
         return json.asString();

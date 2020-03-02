@@ -1,0 +1,44 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import os, sys
+
+projectName = 'kxnrl.message'
+
+# smsdk_ext.cpp will be automatically added later
+sourceFiles = [
+  'extension.cpp',
+  'natives.cpp',
+  'websocket.cpp',
+]
+
+###############
+# Make sure to edit PackageScript, which copies your files to their appropriate locations
+# Simple extensions do not need to modify past this point.
+
+project = Extension.HL2Project(builder, projectName + '.ext')
+
+if os.path.isfile(os.path.join(builder.currentSourcePath, 'sdk', 'smsdk_ext.cpp')):
+  # Use the copy included in the project
+  project.sources += [os.path.join('sdk', 'smsdk_ext.cpp')]
+else:
+  # Use the copy included with SM 1.6 and newer
+  project.sources += [os.path.join(Extension.sm_root, 'public', 'smsdk_ext.cpp')]
+
+project.sources += sourceFiles
+
+if project.compiler.like('msvc'):
+  project.compiler.cxxflags += [ '/await', '/bigobj' ]
+
+if 'VCPKG_ROOT' in os.environ and 'VCPKG_TARGET_TRIPLET' in os.environ:
+  vcpkg_root = os.environ['VCPKG_ROOT']
+  vcpkg_triplet = os.environ['VCPKG_TARGET_TRIPLET']
+  vcpkg_libpath = os.path.join(vcpkg_root, 'installed', vcpkg_triplet, 'lib')
+  libs = [os.path.join(vcpkg_libpath, f) for f in os.listdir(vcpkg_libpath) if os.path.isfile(os.path.join(vcpkg_libpath, f)) and f.startswith('boost_')]
+  libs += [ os.path.join(vcpkg_libpath, 'libssl.lib'), os.path.join(vcpkg_libpath, 'libcrypto.lib'), 'crypt32.lib' ]
+  libs += [ os.path.join(builder.currentSourcePath, 'lib', 'lib_json.lib') ]
+  project.compiler.postlink += libs
+else:
+  raise Exception('No \'VCPKG_ROOT\' or \'VCPKG_TARGET_TRIPLET\' environment variable set')
+
+project.Configure(projectName + '.ext', 'Kxnrl')
+
+Extension.extensions = builder.Add(project)

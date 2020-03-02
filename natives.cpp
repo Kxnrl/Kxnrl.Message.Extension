@@ -1,7 +1,13 @@
+#include <string>
+
 #include "extension.h"
-#include "websocket.h"
 #include "natives.h"
 #include "message.h"
+
+#include "json/json.h"
+
+extern HandleType_t g_MessageHandleType;
+extern void Send(std::string &json);
 
 const sp_nativeinfo_t MessageNatives[] =
 {
@@ -95,7 +101,7 @@ cell_t Native_Send(IPluginContext *pContext, const cell_t *params)
         return pContext->ThrowNativeError("Invalid Message handle %x (error %d)", hndl, err);
     }
 
-    string json = message->JsonString();
+    std::string json = message->JsonString();
 
     // if not close, we can re-use
     if (params[2])
@@ -107,7 +113,8 @@ cell_t Native_Send(IPluginContext *pContext, const cell_t *params)
         }
     }
 
-    return Send(json);
+    Send(json);
+    return 1;
 }
 
 cell_t Native_RawJson(IPluginContext *pContext, const cell_t *params)

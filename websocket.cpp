@@ -1,391 +1,141 @@
+#include <chrono>
+#include <boost/atomic.hpp>
+#include <boost/bind.hpp>
+#include <boost/beast.hpp>
+#include <boost/beast/ssl.hpp>
+
 #include "extension.h"
 #include "websocket.h"
 #include "message.h"
-#include <map>
-#include <chrono>
-#include <stdlib.h>
-#include <unordered_map>
-#include <websocketpp/config/asio_no_tls_client.hpp>
-#include <websocketpp/client.hpp>
 
-// WebSocket
+namespace beast = boost::beast;
+using tcp = boost::asio::ip::tcp;
 
-/* Alias namespace */
-// websocketpp
-namespace ws_lib = websocketpp::lib;
-namespace ws_log = websocketpp::log;
-namespace opcode = websocketpp::frame::opcode;
 
-typedef websocketpp::client<websocketpp::config::asio_client> client;
-typedef websocketpp::config::asio_client::message_type::ptr message_ptr;
-typedef websocketpp::connection_hdl connection_hdl;
-typedef client::connection_ptr connection_ptr;
-typedef ws_lib::error_code errcode;
-typedef std::chrono::duration<int, std::micro> dur_type;
-typedef std::string string;
+extern void reportError(boost::system::system_error err);
+extern void pushBuffer(beast::flat_buffer buffer);
 
-const sp_nativeinfo_t WebSocketNatives[] =
+template<typename S>
+WSClient<S>::WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval)
+    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_IoContext(&netc), m_GameContext(&gamec), m_PingInterval(interval)
 {
-    {"KxnrlMessage_IsConnected", Native_IsConnected},
-    {NULL, NULL}
-};
-
-ITimer *g_HeartBeat = NULL;
-
-time_t g_LastSent;
-time_t g_Interval;
-
-class HeartBeatTimer : public ITimedEvent
-{
-public:
-    ResultType OnTimer(ITimer *pTimer, void *pData)
-    {
-        time_t now = time(NULL);
-
-        if (now - g_LastSent < g_Interval)
-        {
-            // recently
-            return Pl_Continue;
-        }
-
-        static int count = 0;
-
-        KMessage *message = new KMessage(Message_Type::PingPong);
-        message->WriteInt64("time", static_cast<int64_t>(time(NULL)));
-        message->WriteString("ping", "pong");
-        Send(message->JsonString());
-        delete message;
-        
-        static char buffer[128];
-        memset(buffer, 0, sizeof(buffer));
-        smutils->Format(buffer, sizeof(buffer), "%sHeartBeat: %d\n", THIS_PREFIX, ++count);
-        printf_s(buffer);
-
-        return Pl_Continue;
-    }
-
-    void OnTimerEnd(ITimer *pTimer, void *pData)
-    {
-        
-    }
-} g_HeartBeatTimer;
-
-class WebSocketClient : public IThread
-{
-    void RunThread(IThreadHandle *pHandle)
-    {
-        Init(true);
-    }
-
-    void OnTerminate(IThreadHandle *pHandle, bool cancel)
-    {
-        Disconnect();
-    }
-
-public:
-    bool Available()
-    {
-        return m_bConnected && !m_bClosing;
-    }
-
-    bool Send(string message)
-    {
-        if (!Available())
-        {
-            SaveQueue(message);
-            return false;
-        }
-
-        g_LastSent = time(NULL);
-        errcode ec;
-        m_WebSocket.send(m_Connection_hdl, message, opcode::text, ec);
-        if (ec)
-        {
-            SaveQueue(message);
-            smutils->LogError(myself, "Failed to send message to server: %s -> [%s]", ec.message().c_str(), message.c_str());
-            return false;
-        }
-        return true;
-    }
-
-    void Shutdown()
-    {
-        m_bClosing = true;
-        printf_s("%s Shutdown websocket client.\n", THIS_PREFIX);
-
-        if (m_bConnected)
-        {
-            m_bConnected = false;
-            //g_WebSocket.close(g_Connection, opcode::close, "DISCONNECT");
-        }
-        if (!m_WebSocket.stopped())
-        {
-            m_WebSocket.stop();
-            smutils->LogMessage(myself, "Shutdown socket on exit.");
-        }
-    }
-
-private:
-    void SaveQueue(string message)
-    {
-        if (m_bQueue.find(message) == m_bQueue.end())
-        {
-            m_bQueue[message] = true;
-            smutils->LogMessage(myself, "Socket is unavailable now. Push data to queue. -> %s", message.c_str());
-        }
-        else
-        {
-            smutils->LogMessage(myself, "Socket is unavailable now. but data is already in queue. -> %s", message.c_str());
-        }
-    }
-
-    void PushQueue()
-    {
-        // push all local storage
-        if (m_bQueue.size() <= 0)
-            return;
-
-        for (auto iter = m_bQueue.begin(); iter != m_bQueue.end();)
-        {
-            Send(iter->first);
-            iter = m_bQueue.erase(iter);
-        }
-    }
-
-private:
-    client m_WebSocket;
-    connection_hdl m_Connection_hdl;
-    connection_ptr m_Connection_ptr;
-    bool m_bConnected = false;
-    bool m_bConnecting = false;
-    bool m_bClosing = false;
-    std::unordered_map<string, bool> m_bQueue;
-    typedef WebSocketClient self;
-    uint16_t m_Retries = 0;
-
-    /* Init WebSocket */
-    void Init(bool init = false)
-    {
-        if (init)
-        {
-            // ASIO
-            printf_s("%sInit socket asio service...\n", THIS_PREFIX);
-            m_WebSocket.init_asio();
-        }
-        else
-        {
-            // Reset
-            printf_s("%sReset socket asio service...\n", THIS_PREFIX);
-            m_WebSocket.reset();
-        }
-
-        // Log
-        printf_s("%sSet socket log level...\n", THIS_PREFIX);
-        m_WebSocket.set_access_channels(ws_log::alevel::none);
-        m_WebSocket.set_error_channels(ws_log::elevel::fatal);
-        m_WebSocket.clear_access_channels(ws_log::alevel::frame_header);
-        m_WebSocket.clear_access_channels(ws_log::alevel::frame_payload);
-
-        // User-Agent
-        printf_s("%sSet socket user-agent...\n", THIS_PREFIX);
-        m_WebSocket.set_user_agent("Kxnrl.Message Extension");
-
-        // Params
-        m_WebSocket.set_close_handshake_timeout(10000);
-        m_WebSocket.set_open_handshake_timeout(10000);
-
-        // Event Handlers
-        printf_s("%sSet event handler...\n", THIS_PREFIX);
-        m_WebSocket.set_open_handler(bind(&self::OnOpen, this, websocketpp::lib::placeholders::_1));
-        m_WebSocket.set_fail_handler(bind(&self::OnFail, this, websocketpp::lib::placeholders::_1));
-        m_WebSocket.set_message_handler(bind(&self::OnMessage, this, websocketpp::lib::placeholders::_1, websocketpp::lib::placeholders::_2));
-        m_WebSocket.set_close_handler(bind(&self::OnClose, this, websocketpp::lib::placeholders::_1));
-
-        // Connection Ptr
-        printf_s("%sGet connection ptr...\n", THIS_PREFIX);
-        ws_lib::error_code ec; 
-        m_Connection_ptr = m_WebSocket.get_connection(g_Socket_Url, ec);
-        if (ec)
-        {
-            m_bConnecting = false;
-            smutils->LogError(myself, "[FATAL ERROR]  Failed to create connection_hdl to '%s': %s", g_Socket_Url.c_str(), ec.message().c_str());
-            return;
-        }
-
-        if (++m_Retries >= 50)
-        {
-            // restart server.
-            g_bRequireRestart = true;
-            return;
-        }
-
-        // Connect
-        Connect(!init);
-    }
-
-    bool Connect(bool reconnect = true)
-    {
-    retry:
-        if (m_bClosing)
-        {
-            printf_s("%s OnClosing, DO NOT make connection.\n", THIS_PREFIX);
-            return false;
-        }
-
-        // sleep
-        threader->ThreadSleep(reconnect ? 8000u : 10u);
-
-        // Connection
-        try
-        {
-            // flag
-            m_bConnecting = true;
-            printf_s("%s #%d Socket connecting to \"%s\"...\n", THIS_PREFIX, m_Retries, g_Socket_Url.c_str());
-
-            // go
-            m_WebSocket.connect(m_Connection_ptr);
-
-            // ASIO
-            m_WebSocket.run();
-        }
-        catch (websocketpp::exception const &e)
-        {
-            smutils->LogError(myself, "Socket exception: %s", e.what());
-            threader->ThreadSleep(5000u);
-            goto retry;
-        }
-
-        return true;
-    }
-
-    void Disconnect()
-    {
-        m_bClosing = true;
-        printf_s("%s Disconnecting...\n", THIS_PREFIX);
-
-        if (m_bConnected)
-        {
-            m_bConnected = false;
-            //m_WebSocket.close(g_Connection, opcode::close, "DISCONNECT");
-        }
-
-        if (!m_WebSocket.stopped())
-        {
-            m_WebSocket.stop();
-            smutils->LogMessage(myself, "Stopped socket.");
-        }
-    }
-
-    void OnOpen(connection_hdl hdl)
-    {
-        m_bConnecting = false;
-        m_bConnected = true;
-        m_Connection_hdl = hdl;
-
-        smutils->LogMessage(myself, "Socket conneted to \"%s\".", g_Socket_Url.c_str());
-
-        // push all local storage
-        PushQueue();
-
-        g_LastSent = time(NULL);
-        g_HeartBeat = timersys->CreateTimer(&g_HeartBeatTimer, 1.0f, NULL, TIMER_FLAG_REPEAT);
-    }
-
-    void OnFail(connection_hdl hdl)
-    {
-        connection_ptr con = m_WebSocket.get_con_from_hdl(hdl);
-
-        m_bConnected = false;
-        m_bConnecting = false;
-        smutils->LogError(myself, "Failed to connect to \"%s\" :  %s", g_Socket_Url.c_str(), con->get_ec().message().c_str());
-
-        if (!m_WebSocket.stopped())
-        {
-            m_WebSocket.stop();
-            smutils->LogMessage(myself, "Stopped websocket on fail.");
-        }
-
-        if (g_HeartBeat != NULL)
-        {
-            // reset
-            timersys->KillTimer(g_HeartBeat);
-            g_HeartBeat = NULL;
-        }
-
-        if (!m_bConnecting && !m_bConnecting)
-        {
-            // reconnect
-            Init();
-        }
-    }
-
-    void OnClose(connection_hdl hdl)
-    {
-        connection_ptr con = m_WebSocket.get_con_from_hdl(hdl);
-
-        m_bConnected = false;
-        smutils->LogError(myself, "Server \"%s\" closed connection_hdl: %s", g_Socket_Url.c_str(), con->get_remote_close_reason().c_str());
-
-        if (!m_WebSocket.stopped())
-        {
-            m_WebSocket.stop();
-            smutils->LogMessage(myself, "Stopped socket on closed.");
-        }
-
-        if (g_HeartBeat != NULL)
-        {
-            // reset
-            timersys->KillTimer(g_HeartBeat);
-            g_HeartBeat = NULL;
-        }
-
-        if (!m_bConnecting && !m_bConnecting)
-        {
-            // reconnect
-            Init();
-        }
-    }
-
-    void OnMessage(connection_hdl hdl, message_ptr msg)
-    {
-        if (msg->get_opcode() != opcode::text)
-        {
-            smutils->LogMessage(myself, "Recv '%d' from \"%s\".\nJson:\n%s", msg->get_opcode(), g_Socket_Url.c_str(), msg->get_raw_payload().c_str());
-            return;
-        }
-
-        PushMessage(msg->get_payload());
-
-        PushQueue();
-    }
-} wsclient;
-
-IThreadHandle *CreateThread(float heartbeat)
-{
-    ThreadParams params;
-    params.flags = ThreadFlags::Thread_Default;
-    params.prio = ThreadPriority::ThreadPrio_Low;
-    g_Interval = (time_t)std::chrono::system_clock::to_time_t(std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<float>(heartbeat))));
-    return threader->MakeThread(&wsclient, &params);
+    m_Ws = std::make_unique<boost::beast::websocket::stream<S>>(netc);
+    m_PingTimer = std::make_unique<boost::asio::steady_timer>(netc);
 }
 
-void Shutdown()
+template<>
+WSClient<beast::ssl_stream<beast::tcp_stream>>::WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval)
+    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_IoContext(&netc), m_GameContext(&gamec), m_PingInterval(interval)
 {
-    timersys->KillTimer(g_HeartBeat);
-    wsclient.Shutdown();
+    m_SslContext = std::make_unique<boost::asio::ssl::context>(boost::asio::ssl::context::tls_client);
+    m_Ws = std::make_unique<boost::beast::websocket::stream<beast::ssl_stream<beast::tcp_stream>>>(netc, *m_SslContext);
+    m_PingTimer = std::make_unique<boost::asio::steady_timer>(netc);
 }
 
-bool Send(string message)
+template<typename S>
+void WSClient<S>::Start()
 {
-    return wsclient.Send(message);
+    boost::asio::co_spawn(*m_IoContext, boost::bind(&WSClient::co_entry, this), boost::asio::detached);
+    boost::asio::co_spawn(*m_IoContext, boost::bind(&WSClient::co_ping, this), boost::asio::detached);
 }
 
-bool WebSocketAvailable()
+template<typename S>
+void WSClient<S>::Send(std::vector<uint8_t> data)
 {
-    return wsclient.Available();
+    m_Ws->async_write(boost::asio::buffer(data), [](boost::system::error_code const&, std::size_t) {
+    });
 }
 
-cell_t Native_IsConnected(IPluginContext *pContext, const cell_t *params)
+template<typename S>
+void WSClient<S>::Stop()
 {
-    return WebSocketAvailable();
+    beast::get_lowest_layer(*m_Ws).cancel();
+    m_PingTimer->cancel();
 }
+
+template<typename S>
+bool WSClient<S>::IsOpen()
+{
+    return m_Ws->is_open();
+}
+
+template<typename S>
+boost::asio::awaitable<void> WSClient<S>::co_entry()
+{
+    try {
+        tcp::resolver resolver(*m_IoContext);
+        auto const results = co_await resolver.async_resolve(m_Host, m_Port, boost::asio::use_awaitable);
+        co_await co_run_stream(results);
+    }
+    catch (boost::system::system_error& err)
+    {
+        boost::asio::dispatch(*m_GameContext, boost::bind(reportError, err));
+    }
+}
+
+template<typename S>
+boost::asio::awaitable<void> WSClient<S>::co_run()
+{
+    m_Ws->set_option(beast::websocket::stream_base::timeout::suggested(beast::role_type::client));
+    m_Ws->set_option(beast::websocket::stream_base::decorator(
+        [](beast::websocket::request_type& req)
+        {
+            req.set(beast::http::field::user_agent,
+                "Kxnrl.Message Extension");
+        }));
+
+    co_await m_Ws->async_handshake(m_Host, m_Path, boost::asio::use_awaitable);
+
+    while (1) {
+        beast::flat_buffer buffer;
+        co_await m_Ws->async_read(buffer, boost::asio::use_awaitable);
+        boost::asio::dispatch(*m_GameContext, boost::bind(pushBuffer, buffer));
+    }
+}
+
+template<typename S>
+boost::asio::awaitable<void> WSClient<S>::co_ping()
+{
+    try {
+        while (1) {
+            m_PingTimer->expires_after(std::chrono::milliseconds((int64_t)(m_PingInterval) * 1000));
+            co_await m_PingTimer->async_wait(boost::asio::use_awaitable);
+            
+            auto message = std::make_unique<KMessage>(Message_Type::PingPong);
+            message->WriteInt64("time", static_cast<int64_t>(std::time(NULL)));
+            message->WriteString("ping", "pong");
+            auto pingdata = message->JsonString();
+
+            Send(std::vector<uint8_t>((uint8_t*)pingdata.data(), (uint8_t*)(pingdata.data()+pingdata.size())));
+        }
+    }
+    catch (std::exception&)
+    {
+    }
+}
+
+template<>
+boost::asio::awaitable<void> WSClient<beast::ssl_stream<beast::tcp_stream>>::co_run_stream(tcp::resolver::results_type results)
+{
+    beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
+    co_await beast::get_lowest_layer(*m_Ws).async_connect(results, boost::asio::use_awaitable);
+
+    beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
+    co_await m_Ws->next_layer().async_handshake(boost::asio::ssl::stream_base::handshake_type::client, boost::asio::use_awaitable);
+
+    beast::get_lowest_layer(*m_Ws).expires_never();
+    co_await co_run();
+}
+
+template<>
+boost::asio::awaitable<void> WSClient<beast::tcp_stream>::co_run_stream(tcp::resolver::results_type results)
+{
+    beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
+    co_await beast::get_lowest_layer(*m_Ws).async_connect(results, boost::asio::use_awaitable);
+
+    beast::get_lowest_layer(*m_Ws).expires_never();
+    co_await co_run();
+}
+
+template class WSClient<beast::ssl_stream<beast::tcp_stream>>;
+template class WSClient<beast::tcp_stream>;
