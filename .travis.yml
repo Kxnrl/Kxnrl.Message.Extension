@@ -28,8 +28,7 @@ jobs:
   - stage: build
     os: linux
     env:
-      global:
-       - VCPKG_TARGET_TRIPLET=x86-linux-sm
+      - VCPKG_TARGET_TRIPLET=x86-linux-sm
     install:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - |
@@ -46,8 +45,7 @@ jobs:
   - stage: build
     os: windows
     env:
-      global:
-       - VCPKG_TARGET_TRIPLET=x86-windows-sm
+      - VCPKG_TARGET_TRIPLET=x86-windows-sm
     install:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
