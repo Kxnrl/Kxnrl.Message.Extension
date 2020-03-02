@@ -1,9 +1,5 @@
 language: cpp
 
-os:
-  - windows
-  - linux
-
 branches:
   only:
   - master
