@@ -15,9 +15,6 @@ env:
   global:
    - DEPS_DIR=${HOME}/deps
    - VCPKG_ROOT=${DEPS_DIR}/vcpkg
-  jobs:
-   - BRANCH=1.10-dev
-   - BRANCH=master
 
 before_install:
   - git clone https://github.com/alliedmodders/ambuild ${DEPS_DIR}/ambuild
@@ -29,6 +26,7 @@ jobs:
     os: linux
     python: 3.8
     env:
+      - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-linux-sm
     before_script:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
@@ -47,6 +45,7 @@ jobs:
   - name: Windows
     os: windows
     env:
+      - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-windows-sm
       - PATH=/c/Python38:/c/Python38/Scripts:${PATH}
     before_script:
