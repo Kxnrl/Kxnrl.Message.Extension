@@ -47,4 +47,4 @@ subprocess.call([VCPKG_EXEC, 'install', 'boost-asio', 'boost-beast', 'openssl', 
 print('Start building')
 os.chdir(BUILD_DIR)
 subprocess.call(['python', '../configure.py', '--enable-optimize', '--sm-path', SM_PATH])
-subprocess.call(['ambuild'])
+subprocess.call(['python', '-m', 'ambuild'])
