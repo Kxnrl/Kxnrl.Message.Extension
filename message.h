@@ -261,7 +261,6 @@ public:
         return m_RawJson["Message_Data"][key].isArray();
     }
 
-
     /*
      *   Write Function
      */
@@ -269,7 +268,14 @@ public:
     {
         if (m_ArrayMode)
         {
-            m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            if (strlen(key) > 0)
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            }
+            else
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex] = value;
+            }
         }
         else
         {
@@ -281,7 +287,14 @@ public:
     {
         if (m_ArrayMode)
         {
-            m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            if (strlen(key) > 0)
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            }
+            else
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex] = value;
+            }
         }
         else
         {
@@ -293,7 +306,14 @@ public:
     {
         if (m_ArrayMode)
         {
-            m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            if (strlen(key) > 0)
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            }
+            else
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex] = value;
+            }
         }
         else
         {
@@ -305,7 +325,14 @@ public:
     {
         if (m_ArrayMode)
         {
-            m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            if (strlen(key) > 0)
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            }
+            else
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex] = value;
+            }
         }
         else
         {
@@ -317,7 +344,14 @@ public:
     {
         if (m_ArrayMode)
         {
-            m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            if (strlen(key) > 0)
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            }
+            else
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex] = value;
+            }
         }
         else
         {
@@ -329,7 +363,14 @@ public:
     {
         if (m_ArrayMode)
         {
-            m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            if (strlen(key) > 0)
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex][key] = value;
+            }
+            else
+            {
+                m_RawJson["Message_Data"][m_ArrayKey][m_ArrayIndex] = value;
+            }
         }
         else
         {
