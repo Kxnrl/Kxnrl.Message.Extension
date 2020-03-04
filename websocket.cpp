@@ -40,9 +40,13 @@ void WSClient<S>::Start()
 }
 
 template<typename S>
-void WSClient<S>::Send(std::vector<uint8_t> data)
+void WSClient<S>::Send(std::string data)
 {
-    m_Ws->async_write(boost::asio::buffer(data), [](boost::system::error_code const&, std::size_t) {
+    extern void PushSendQueue(const std::string &data);
+    m_Ws->async_write(boost::asio::buffer(data), [data](boost::system::error_code const& ec, std::size_t) {
+        if (ec) {
+            PushSendQueue(data);
+        }
     });
 }
 
@@ -106,7 +110,7 @@ boost::asio::awaitable<void> WSClient<S>::co_ping()
             message->WriteString("ping", "pong");
             auto pingdata = message->JsonString();
 
-            Send(std::vector<uint8_t>((uint8_t*)pingdata.data(), (uint8_t*)(pingdata.data()+pingdata.size())));
+            Send(pingdata);
         }
     }
     catch (std::exception&)

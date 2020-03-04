@@ -7,7 +7,8 @@
 #include "json/json.h"
 
 extern HandleType_t g_MessageHandleType;
-extern void Send(std::string &json);
+extern bool Send(const std::string &json);
+extern void PushSendQueue(const std::string &data);
 
 const sp_nativeinfo_t MessageNatives[] =
 {
@@ -113,7 +114,9 @@ cell_t Native_Send(IPluginContext *pContext, const cell_t *params)
         }
     }
 
-    Send(json);
+    if (!Send(json)) {
+        PushSendQueue(json);
+    }
     return 1;
 }
 

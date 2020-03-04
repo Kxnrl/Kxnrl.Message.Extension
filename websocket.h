@@ -5,7 +5,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
@@ -18,7 +17,7 @@ public:
     WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval);
 
     void Start();
-    void Send(std::vector<uint8_t> data);
+    void Send(std::string data);
     void Stop();
 
     bool IsOpen();

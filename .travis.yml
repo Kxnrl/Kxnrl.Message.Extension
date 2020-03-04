@@ -28,7 +28,7 @@ jobs:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - |
         pushd ${DEPS_DIR}/ambuild
-        python setup.py install
+        python setup.py install --user
         popd
       - |
         ${VCPKG_ROOT}/bootstrap-vcpkg.sh
@@ -46,10 +46,10 @@ jobs:
       - PATH=/c/Python38:/c/Python38/Scripts:${PATH}
     before_script:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
-      - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
+      - choco install -y visualstudio2017buildtools python3 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
       - |
         pushd ${DEPS_DIR}/ambuild
-        python setup.py install
+        python setup.py install --user
         popd
       - |
         ${VCPKG_ROOT}/bootstrap-vcpkg.bat

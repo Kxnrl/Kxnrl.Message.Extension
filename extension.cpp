@@ -1,6 +1,8 @@
 ﻿#include <string>
 #include <memory>
 #include <vector>
+#include <queue>
+#include <mutex>
 
 #include <boost/atomic.hpp>
 #include <boost/asio.hpp>
@@ -30,6 +32,9 @@ std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::execut
 
 std::unique_ptr<WSClient<beast::ssl_stream<beast::tcp_stream>>> g_pTlsClient = nullptr;
 std::unique_ptr<WSClient<beast::tcp_stream>> g_pClient = nullptr;
+
+std::mutex g_pSendQueue_Mutex;
+std::unique_ptr<std::queue<std::string>> g_pSendQueue = nullptr;
 
 std::string g_Socket_Url;
 IForward *g_fwdOnMessage = nullptr;
@@ -89,6 +94,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     if (g_fwdOnMessage == nullptr)
     {
         smutils->Format(error, maxlength, "Failed to create forward \"OnMessageReceived\"");
+        SDK_OnUnload();
         return false;
     }
 
@@ -121,6 +127,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
     g_MessageHandleType = handlesys->CreateType("Message", &g_MessageTypeHandler, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
+    g_pSendQueue = std::make_unique<std::queue<std::string>>();
     // Initialize IO here.
     g_IoContext = std::make_unique<boost::asio::io_context>();
     g_GameContext = std::make_unique<boost::asio::io_context>();
@@ -178,6 +185,8 @@ void kMessage::SDK_OnUnload()
     g_GameContext->stop();
     g_GameContext = nullptr;
 
+    g_pSendQueue = nullptr;
+
     handlesys->RemoveType(g_MessageHandleType, myself->GetIdentity());
 
     if (g_fwdOnMessage)
@@ -189,6 +198,16 @@ void kMessage::SDK_OnUnload()
 
 void OnGameFrame(bool simulating)
 {
+    {
+        bool Send(const std::string &json);
+        std::lock_guard<std::mutex> lock_guard(g_pSendQueue_Mutex);
+        while (g_pSendQueue->size() > 0) {
+            if (!Send(g_pSendQueue->front())) {
+                break;
+            }
+            g_pSendQueue->pop();
+        }
+    }
     g_GameContext->run();
 }
 
@@ -199,6 +218,7 @@ void pushBuffer(beast::flat_buffer buffer)
     if (!success)
     {
         delete message;
+        return;
     }
 
     Handle_t handle = handlesys->CreateHandle(g_MessageHandleType, message, NULL, myself->GetIdentity(), NULL);
@@ -225,15 +245,23 @@ void reportError(boost::system::system_error err)
     SetClientWithUri(g_Socket_Url);
 }
 
-void Send(std::string &json)
+bool Send(const std::string &data)
 {
-    std::vector<uint8_t> buf(json.data(), json.data() + json.size());
-    if (g_pTlsClient) {
-        g_pTlsClient->Send(buf);
+    if (g_pTlsClient && g_pTlsClient->IsOpen()) {
+        g_pTlsClient->Send(data);
+        return true;
     }
-    else if (g_pClient) {
-        g_pClient->Send(buf);
+    else if (g_pClient && g_pClient->IsOpen()) {
+        g_pClient->Send(data);
+        return true;
     }
+    return false;
+}
+
+void PushSendQueue(const std::string &data)
+{
+    std::lock_guard<std::mutex> lock_guard(g_pSendQueue_Mutex);
+    g_pSendQueue->push(data);
 }
 
 cell_t Native_IsConnected(IPluginContext *pContext, const cell_t *params)
