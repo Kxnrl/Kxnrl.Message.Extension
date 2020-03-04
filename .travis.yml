@@ -33,7 +33,6 @@ jobs:
         popd
       - |
         pushd ${VCPKG_ROOT}
-        git checkout e3dfd4a9fa25c05abcf166a1b3bb260b542ed598
         ./bootstrap-vcpkg.sh
         ./vcpkg install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
         popd
@@ -60,7 +59,7 @@ jobs:
         popd
       - |
         ${VCPKG_ROOT}/bootstrap-vcpkg.bat
-        ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
+        travis_wait ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
     script:
       - ./build.bat
     deploy:
