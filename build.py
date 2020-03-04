@@ -1,11 +1,12 @@
 import os, os.path
+import sys
 import shutil
 import subprocess
 
 
 def CHECK_RETURN(ret):
     if ret != 0:
-        os.exit(ret)
+        sys.exit(ret)
 
 
 EXT_DIR = os.path.dirname(os.path.realpath(__file__))
