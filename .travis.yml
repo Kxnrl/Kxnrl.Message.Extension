@@ -37,8 +37,9 @@ jobs:
         ./bootstrap-vcpkg.sh
         ./vcpkg install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
         popd
+        chmod +x build.sh
     script:
-      - sudo ./build.sh
+      - ./build.sh
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
