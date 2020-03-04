@@ -43,9 +43,18 @@ template<typename S>
 void WSClient<S>::Send(std::string data)
 {
     extern void PushSendQueue(const std::string &data);
-    m_Ws->async_write(boost::asio::buffer(data), [data](boost::system::error_code const& ec, std::size_t) {
+
+    auto log_and_push_queue = [](const std::string &data, const char *message) {
+        smutils->LogMessage(myself, "Unable to send content with error: %s, pushing to send queue...", message);
+        PushSendQueue(data);
+    };
+
+    if (IsOpen()) {
+        log_and_push_queue(data, "Not opened");
+    }
+    m_Ws->async_write(boost::asio::buffer(data), [data, log_and_push_queue](boost::system::error_code const& ec, std::size_t) {
         if (ec) {
-            PushSendQueue(data);
+            log_and_push_queue(data, ec.message().c_str());
         }
     });
 }
@@ -80,6 +89,8 @@ boost::asio::awaitable<void> WSClient<S>::co_entry()
 template<typename S>
 boost::asio::awaitable<void> WSClient<S>::co_run()
 {
+    beast::get_lowest_layer(*m_Ws).expires_never();
+
     m_Ws->set_option(beast::websocket::stream_base::timeout::suggested(beast::role_type::client));
     m_Ws->set_option(beast::websocket::stream_base::decorator(
         [](beast::websocket::request_type& req)
@@ -127,7 +138,6 @@ boost::asio::awaitable<void> WSClient<beast::ssl_stream<beast::tcp_stream>>::co_
     beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
     co_await m_Ws->next_layer().async_handshake(boost::asio::ssl::stream_base::handshake_type::client, boost::asio::use_awaitable);
 
-    beast::get_lowest_layer(*m_Ws).expires_never();
     co_await co_run();
 }
 
@@ -137,7 +147,6 @@ boost::asio::awaitable<void> WSClient<beast::tcp_stream>::co_run_stream(tcp::res
     beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
     co_await beast::get_lowest_layer(*m_Ws).async_connect(results, boost::asio::use_awaitable);
 
-    beast::get_lowest_layer(*m_Ws).expires_never();
     co_await co_run();
 }
 

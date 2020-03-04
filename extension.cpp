@@ -1,5 +1,7 @@
 ﻿#include <string>
 #include <memory>
+#include <unordered_map>
+#include <functional>
 #include <vector>
 #include <queue>
 #include <mutex>
@@ -35,6 +37,7 @@ std::unique_ptr<WSClient<beast::tcp_stream>> g_pClient = nullptr;
 
 std::mutex g_pSendQueue_Mutex;
 std::unique_ptr<std::queue<std::string>> g_pSendQueue = nullptr;
+std::unique_ptr<std::unordered_map<std::string, bool>> g_pSendMatch = nullptr;
 
 std::string g_Socket_Url;
 IForward *g_fwdOnMessage = nullptr;
@@ -128,6 +131,8 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     g_MessageHandleType = handlesys->CreateType("Message", &g_MessageTypeHandler, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
     g_pSendQueue = std::make_unique<std::queue<std::string>>();
+    g_pSendMatch = std::make_unique<std::unordered_map<std::string, bool>>();
+
     // Initialize IO here.
     g_IoContext = std::make_unique<boost::asio::io_context>();
     g_GameContext = std::make_unique<boost::asio::io_context>();
@@ -205,6 +210,7 @@ void OnGameFrame(bool simulating)
             if (!Send(g_pSendQueue->front())) {
                 break;
             }
+            g_pSendMatch->erase(g_pSendQueue->front());
             g_pSendQueue->pop();
         }
     }
@@ -261,7 +267,10 @@ bool Send(const std::string &data)
 void PushSendQueue(const std::string &data)
 {
     std::lock_guard<std::mutex> lock_guard(g_pSendQueue_Mutex);
-    g_pSendQueue->push(data);
+    if (g_pSendMatch->find(data) == g_pSendMatch->end()) {
+        g_pSendQueue->push(data);
+        (*g_pSendMatch)[data] = true;
+    }
 }
 
 cell_t Native_IsConnected(IPluginContext *pContext, const cell_t *params)
