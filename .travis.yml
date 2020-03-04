@@ -25,6 +25,7 @@ jobs:
       - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-linux-sm
     before_script:
+      - apt-get install -y gcc-multilib g++-multilib
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - |
         pushd ${DEPS_DIR}/ambuild
@@ -46,7 +47,7 @@ jobs:
     env:
       - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-windows-sm
-      - PATH=/c/Python38:/c/Python38/Scripts:${PATH}
+      - PATH=/c/Python38:/c/Python38/Scripts:${HOME}/AppData/Roaming/Python/Python38/Scripts:${PATH}
     before_script:
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - choco install -y visualstudio2017buildtools python3 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
