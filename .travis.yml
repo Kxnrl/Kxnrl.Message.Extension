@@ -31,8 +31,11 @@ jobs:
         python setup.py install --user
         popd
       - |
-        ${VCPKG_ROOT}/bootstrap-vcpkg.sh
-        travis_wait ${VCPKG_ROOT}/vcpkg install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
+        pushd ${VCPKG_ROOT}
+        git checkout e3dfd4a9fa25c05abcf166a1b3bb260b542ed598
+        ./bootstrap-vcpkg.sh
+        travis_wait ./vcpkg install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
+        popd
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
