@@ -25,6 +25,13 @@ jobs:
   - name: Linux
     dist: bionic
     python: 3.8
+    dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
     env:
       - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-linux-sm
