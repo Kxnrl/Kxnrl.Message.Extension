@@ -39,9 +39,6 @@ jobs:
         chmod +x build.sh
     script:
       - ./build.sh
-    deploy:
-      file:
-        - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
 
   - name: Windows
     os: windows
@@ -61,10 +58,7 @@ jobs:
         ${VCPKG_ROOT}/bootstrap-vcpkg.bat
         travis_wait ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
     script:
-      - ./build.bat
-    deploy:
-      file:
-        - build/package/addons/sourcemod/extensions/kxnrl.message.ext.dll
+      - ./build.bat      
 
 #before_deploy:
 # # Set up git user name and tag this commit
@@ -77,7 +71,10 @@ jobs:
 #  provider: releases
 #  skip_cleanup: true
 #  api_key: $TOKEN
+#  file:
+#    - build/package/addons/sourcemod/extensions/kxnrl.message.ext.dll
+#    - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
 #  on:
-#      condition: "$BRANCH = 1.10-dev"
-#      repo: Kxnrl/Kxnrl.Message.Extension
-#      all_branches: true
+#    condition: "$BRANCH = 1.10-dev"
+#    repo: Kxnrl/Kxnrl.Message.Extension
+#    all_branches: true
