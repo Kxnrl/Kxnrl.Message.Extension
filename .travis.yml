@@ -25,11 +25,11 @@ jobs:
       - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-linux-sm
     before_script:
-      - apt-get install -y gcc-multilib g++-multilib
+      - sudo apt-get install -y gcc-multilib g++-multilib
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - |
         pushd ${DEPS_DIR}/ambuild
-        python setup.py install --user
+        sudo python setup.py install
         popd
       - |
         pushd ${VCPKG_ROOT}
@@ -53,7 +53,7 @@ jobs:
       - choco install -y visualstudio2017buildtools python3 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
       - |
         pushd ${DEPS_DIR}/ambuild
-        python setup.py install --user
+        python setup.py install
         popd
       - |
         ${VCPKG_ROOT}/bootstrap-vcpkg.bat
