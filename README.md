@@ -1,17 +1,16 @@
 ## Kxnrl.Message.Extension
 
 #### 作为游戏服务器与后台程序通信的桥梁
- **Copyright ©2011-2019  Kyle**  
+ **Copyright ©2011-2020  Kyle**  
    
 |Build Status|Download|
 |---|---
 |[![Build Status](https://img.shields.io/travis/Kxnrl/Kxnrl.Message.Extension/master.svg?style=flat-square)](https://travis-ci.org/Kxnrl/Kxnrl.Message.Extension?branch=master) |[![Download](https://static.kxnrl.com/images/web/buttons/download.png)](https://build.kxnrl.com/_Raw/Kxnrl.Message.Extension/)  
-  
+   
    
 ### 参数
 #### 以下参数需要添加到 addons/sourcemod/configs/core.cfg
-* **WebSocket_Uri** - websocket后台的地址 例如:***ws://websocket.kxnrl.com***
-* **WebSocket_Key** - websocket后台的密钥 验证失败将导致IP被临时封禁
+* **WebSocket_Uri** - websocket后台的地址 例如:***wss://websocket.kxnrl.com***
 * **WebSocket_Heartbeat_Interval** - websocket心跳包间隔时长, 避免因为空闲状态而掉线 ***(10.0 < value < 999.9)***
   
   
@@ -34,6 +33,14 @@ enum Message_Type
     Server_StartMap     = 104,
     Server_EndMap       = 105,
     Server_Query        = 106,
+    Server_PushError    = 107,
+    Server_PushLog      = 108,
+    Server_PushGithub   = 109,
+    Server_PushChatLog  = 110,
+    Server_PushClients  = 111,
+    Server_PushEvents   = 112,
+    Server_PushMaps     = 113,
+    Server_LoadMaps     = 114,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -45,6 +52,8 @@ enum Message_Type
     Broadcast_QQBot     = 303,
     Broadcast_Wedding   = 304,
     Broadcast_Other     = 305,
+    Broadcast_NextMap   = 306,
+    Broadcast_Horn      = 307,
 
     // Baning
     Ban_LoadAdmins      = 401,
@@ -70,17 +79,23 @@ enum Message_Type
     Vip_LoadUser        = 601,
     Vip_LoadAll         = 602,
     Vip_FromClient      = 603,
+    Vip_Purchase        = 604,
 
-    /* Client */
-    Client_ForwardUser  = 701,
-    Client_HeartBeat    = 702,
-    Client_S2S          = 703,
+    // User options
+    Opts_LoadUser       = 701,
+    Opts_SaveUser       = 702,
+
+    // Authorized
+    Auth_GetAuthList    = 801,
+    Auth_GetUserAuth    = 802,
+    Auth_GetAll         = 803,
+    Auth_RequestAuth    = 804,
 
     /* Analytics */
     
     // Global
     Stats_LoadUser      = 1001,
-    Stats_Analytics     = 1002,
+    Stats_Analytics     = 1002, // deprecated
     Stats_Update        = 1003,
     Stats_DailySignIn   = 1004,
 
@@ -116,6 +131,13 @@ enum Message_Type
     Stats_IS_Ranking    = 1304,
     Stats_IS_Trace      = 1305,
     Stats_IS_LoadAll    = 1306,
+
+    /* Active */
+    Acts_LoadUser       = 1999,
+    Acts_SyncUser       = 1998,
+    Acts_UpdateUserTask = 1997,
+    Acts_Exchange       = 1996,
+    Acts_Accomplished   = 1995,
 
     // End
     MaxMessage          = 2000
@@ -196,15 +218,3 @@ methodmap Message < Handle
     public native void  ReadArrayEnd();
 }
 ```
-
-
-### 编译
-* 手动编译
-  - 需要使用Visual Studio 2017 - Windows XP (v141_xp)工具集进行编译
-  - 需要Sourcemod SDK >= 1.9
-  - 需要在系统变量添加"SourceMod"且路径指向解压位置
-  - 双击/msvc15/Kxnrl.Message.sln
-  - 按下F5编译
-* 自动编译
-  - 直接运行build.bat
- 

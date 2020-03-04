@@ -30,6 +30,10 @@ enum Message_Type
     Server_PushLog      = 108,
     Server_PushGithub   = 109,
     Server_PushChatLog  = 110,
+    Server_PushClients  = 111,
+    Server_PushEvents   = 112,
+    Server_PushMaps     = 113,
+    Server_LoadMaps     = 114,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -68,41 +72,23 @@ enum Message_Type
     Vip_LoadUser        = 601,
     Vip_LoadAll         = 602,
     Vip_FromClient      = 603,
+    Vip_Purchase        = 604,
 
     // User options
     Opts_LoadUser       = 701,
     Opts_SaveUser       = 702,
 
-    /* Store */
-    // Load
-    Store_Load          = 900,
-    Store_LoadUser      = 901,
-
-    // Credits
-    Store_EarnCredits   = 911,
-    Store_CostCredits   = 912,
-    Store_SetsCredits   = 913,
-
-    // Items
-    Store_PurchaseItem  = 921,
-    Store_SellItem      = 922,
-    Store_GiveItem      = 923,
-    Store_GiftItem      = 924,
-    Store_ExtendItem    = 925,
-    Store_RemoveItem    = 926,
-    
-    // Equipments
-    Store_EquipItem     = 931,
-    Store_UnequipItem   = 932,
-
-    // Extends
-    Store_ExtraLog      = 941,
+    // Authorized
+    Auth_GetAuthList    = 801,
+    Auth_GetUserAuth    = 802,
+    Auth_GetAll         = 803,
+    Auth_RequestAuth    = 804,
 
     /* Analytics */
     
     // Global
     Stats_LoadUser      = 1001,
-    Stats_Analytics     = 1002,
+    Stats_Analytics     = 1002, // deprecated
     Stats_Update        = 1003,
     Stats_DailySignIn   = 1004,
 
@@ -138,6 +124,13 @@ enum Message_Type
     Stats_IS_Ranking    = 1304,
     Stats_IS_Trace      = 1305,
     Stats_IS_LoadAll    = 1306,
+
+    /* Active */
+    Acts_LoadUser       = 1999,
+    Acts_SyncUser       = 1998,
+    Acts_UpdateUserTask = 1997,
+    Acts_Exchange       = 1996,
+    Acts_Accomplished   = 1995,
 
     // End
     MaxMessage          = 2000
