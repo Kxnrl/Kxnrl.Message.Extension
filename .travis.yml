@@ -32,14 +32,14 @@ jobs:
         popd
       - |
         ${VCPKG_ROOT}/bootstrap-vcpkg.sh
-        ${VCPKG_ROOT}/vcpkg install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
-
+        travis_wait ${VCPKG_ROOT}/vcpkg install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.so
 
   - name: Windows
     os: windows
+    python: 3.8
     env:
       - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-windows-sm
@@ -53,7 +53,7 @@ jobs:
         popd
       - |
         ${VCPKG_ROOT}/bootstrap-vcpkg.bat
-        ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast openssl jsoncpp --triplet ${VCPKG_TARGET_TRIPLET}
+        travis_wait ${VCPKG_ROOT}/vcpkg.exe install boost-asio boost-beast jsoncpp openssl --triplet ${VCPKG_TARGET_TRIPLET}
     deploy:
       file:
         - build/package/addons/sourcemod/extensions/kxnrl.message.ext.dll
