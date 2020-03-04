@@ -23,4 +23,4 @@ subprocess.call(['git', 'clone', 'https://github.com/alliedmodders/sourcemod', '
 print('Start building')
 os.chdir(BUILD_DIR)
 CHECK_RETURN(subprocess.call(['python', '../configure.py', '--enable-optimize', '--sm-path', SM_PATH]))
-CHECK_RETURN(subprocess.call(['python', '-m', 'ambuild']))
+CHECK_RETURN(subprocess.call(['ambuild']))
