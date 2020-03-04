@@ -12,5 +12,9 @@ git clone https://github.com/alliedmodders/sourcemod --recursive --branch %BRANC
 
 mkdir build
 pushd build
-python ../configure.py --enable-optimize --sm-path %EXT_DIR%/sourcemod-%BRANCH% && ambuild
+python ../configure.py --enable-optimize --sm-path %EXT_DIR%/sourcemod-%BRANCH% || goto :error
+ambuild || goto :error
 popd
+
+:error
+exit /b %errorlevel%
