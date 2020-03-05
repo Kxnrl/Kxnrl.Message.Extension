@@ -1,6 +1,8 @@
 #ifndef __KMESSAGE_MESSAGE_INCLUDE__
 #define __KMESSAGE_MESSAGE_INCLUDE__
 
+#include <string.h>
+
 #include <string>
 #include <json/json.h>
 
@@ -337,7 +339,7 @@ public:
         }
     }
 
-    void WriteFloat(const char *key, float_t value)
+    void WriteFloat(const char *key, float value)
     {
         if (m_ArrayMode)
         {
@@ -380,7 +382,8 @@ public:
         m_ArrayMode = true;
         m_ArrayIndex = 0;
 
-        strcpy_s(m_ArrayKey, sizeof(m_ArrayKey), key);
+        strncpy(m_ArrayKey, key, sizeof(m_ArrayKey));
+        m_ArrayKey[sizeof(m_ArrayKey)-1] = '\0';
     }
 
     void WriteArrayEnd()
@@ -469,7 +472,8 @@ public:
         m_ArrayMode = true;
         m_ArrayIndex = 0;
 
-        strcpy_s(m_ArrayKey, sizeof(m_ArrayKey), key);
+        strncpy(m_ArrayKey, key, sizeof(m_ArrayKey));
+        m_ArrayKey[sizeof(m_ArrayKey)-1] = '\0';
     }
 
     bool ReadArrayNext()

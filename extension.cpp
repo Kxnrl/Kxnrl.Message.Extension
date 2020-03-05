@@ -79,8 +79,6 @@ void SetClientWithUri(std::string uri)
     if (pos != std::string::npos)
         port = uri.substr(pos+1);
 
-    smutils->LogMessage(myself, "Connect to %s:%s%s", host.c_str(), port.c_str(), path.c_str());
-
     if (ssl) {
         g_pTlsClient = std::make_unique<WSClient<beast::ssl_stream<beast::tcp_stream>>>(host, port, path, *g_IoContext, *g_GameContext, g_fInterval.load());
         g_pTlsClient->Start();
@@ -105,7 +103,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     const char *uri = smutils->GetCoreConfigValue("WebSocket_Uri");
     if (uri == nullptr)
     {
-        g_Socket_Url = std::move(std::string(WEBSOCKET_SERVER_ADDRESS));
+        g_Socket_Url = std::string(WEBSOCKET_SERVER_ADDRESS);
         smutils->LogMessage(myself, "Key \"WebSocket_Uri\" does not exist in core.cfg, connect to default server \"%s\" instead.", WEBSOCKET_SERVER_ADDRESS);
     }
     else
@@ -242,25 +240,30 @@ void pushBuffer(beast::flat_buffer buffer)
     }
 }
 
-void reportError(boost::system::system_error err)
+void reportError(std::exception err)
 {
-    smutils->LogMessage(myself, "Error: %s", err.code().message().c_str());
+    smutils->LogMessage(myself, "Error: %s", err.what());
     smutils->LogMessage(myself, "Restarting the session");
 
     CleanupClient();
     SetClientWithUri(g_Socket_Url);
 }
 
+void PushSendQueue(const std::string &data);
 bool Send(const std::string &data)
 {
-    if (g_pTlsClient) {
+    if (g_pTlsClient && g_pTlsClient->IsOpen()) {
         g_pTlsClient->Send(data);
         return true;
     }
-    else if (g_pClient) {
+    else if (g_pClient && g_pClient->IsOpen()) {
         g_pClient->Send(data);
         return true;
     }
+    else {
+        PushSendQueue(data);
+    }
+
     return false;
 }
 

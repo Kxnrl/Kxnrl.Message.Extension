@@ -28,8 +28,10 @@ jobs:
     env:
       - BRANCH=1.10-dev
       - VCPKG_TARGET_TRIPLET=x86-linux-sm
+      - CC=clang
+      - CXX=clang++
     before_script:
-      - sudo apt-get install -y gcc-multilib g++-multilib
+      - sudo apt-get install -y gcc-multilib g++-multilib clang libc++-dev
       - cp ${TRAVIS_BUILD_DIR}/vcpkg_triplet/${VCPKG_TARGET_TRIPLET}.cmake ${DEPS_DIR}/vcpkg/triplets
       - |
         pushd ${DEPS_DIR}/ambuild

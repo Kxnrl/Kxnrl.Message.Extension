@@ -12,12 +12,12 @@ namespace beast = boost::beast;
 using tcp = boost::asio::ip::tcp;
 
 
-extern void reportError(boost::system::system_error err);
+extern void reportError(std::exception err);
 extern void pushBuffer(beast::flat_buffer buffer);
 
 template<typename S>
 WSClient<S>::WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval)
-    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_IoContext(&netc), m_GameContext(&gamec), m_PingInterval(interval)
+    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_PingInterval(interval), m_IoContext(&netc), m_GameContext(&gamec)
 {
     m_Ws = std::make_unique<boost::beast::websocket::stream<S>>(netc);
     m_PingTimer = std::make_unique<boost::asio::steady_timer>(netc);
@@ -25,7 +25,7 @@ WSClient<S>::WSClient(std::string host, std::string port, std::string path, boos
 
 template<>
 WSClient<beast::ssl_stream<beast::tcp_stream>>::WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval)
-    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_IoContext(&netc), m_GameContext(&gamec), m_PingInterval(interval)
+    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_PingInterval(interval), m_IoContext(&netc), m_GameContext(&gamec)
 {
     m_SslContext = std::make_unique<boost::asio::ssl::context>(boost::asio::ssl::context::tls_client);
     m_Ws = std::make_unique<boost::beast::websocket::stream<beast::ssl_stream<beast::tcp_stream>>>(netc, *m_SslContext);
@@ -78,9 +78,12 @@ boost::asio::awaitable<void> WSClient<S>::co_entry()
     try {
         tcp::resolver resolver(*m_IoContext);
         auto const results = co_await resolver.async_resolve(m_Host, m_Port, boost::asio::use_awaitable);
+        if (results.size() <= 0) {
+            throw boost::system::system_error(boost::asio::error::netdb_errors::host_not_found);
+        }
         co_await co_run_stream(results);
     }
-    catch (boost::system::system_error& err)
+    catch (std::exception& err)
     {
         boost::asio::dispatch(*m_GameContext, boost::bind(reportError, err));
     }
