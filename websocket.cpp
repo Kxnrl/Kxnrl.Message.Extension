@@ -45,11 +45,11 @@ void WSClient<S>::Send(std::string data)
     extern void PushSendQueue(const std::string &data);
 
     auto log_and_push_queue = [](const std::string &data, const char *message) {
-        smutils->LogMessage(myself, "Unable to send content with error: %s, pushing to send queue...", message);
+        smutils->LogMessage(myself, "Unable to send content with error: %s, pushing to send queue... [%s]", message, data.c_str());
         PushSendQueue(data);
     };
 
-    if (IsOpen()) {
+    if (!IsOpen()) {
         log_and_push_queue(data, "Not opened");
     }
     m_Ws->async_write(boost::asio::buffer(data), [data, log_and_push_queue](boost::system::error_code const& ec, std::size_t) {
@@ -96,10 +96,12 @@ boost::asio::awaitable<void> WSClient<S>::co_run()
         [](beast::websocket::request_type& req)
         {
             req.set(beast::http::field::user_agent,
-                "Kxnrl.Message Extension");
+                "Kxnrl.Message.Extension");
         }));
 
     co_await m_Ws->async_handshake(m_Host, m_Path, boost::asio::use_awaitable);
+
+    smutils->LogMessage(myself, "Socket connected to ws%s://%s:%s", m_SslContext == nullptr ? "" : "s", m_Host.c_str(), m_Port.c_str());
 
     while (1) {
         beast::flat_buffer buffer;
@@ -132,10 +134,10 @@ boost::asio::awaitable<void> WSClient<S>::co_ping()
 template<>
 boost::asio::awaitable<void> WSClient<beast::ssl_stream<beast::tcp_stream>>::co_run_stream(tcp::resolver::results_type results)
 {
-    beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
+    beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(10));
     co_await beast::get_lowest_layer(*m_Ws).async_connect(results, boost::asio::use_awaitable);
 
-    beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
+    beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(10));
     co_await m_Ws->next_layer().async_handshake(boost::asio::ssl::stream_base::handshake_type::client, boost::asio::use_awaitable);
 
     co_await co_run();

@@ -9,8 +9,8 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME         "Kxnrl.Message"
 #define SMEXT_CONF_DESCRIPTION  "WebSocket Message for SourceMod"
-#define SMEXT_CONF_VERSION      "1.0.2020"
-#define SMEXT_CONF_AUTHOR       "Kyle (4y)"
+#define SMEXT_CONF_VERSION      "2.0"
+#define SMEXT_CONF_AUTHOR       "Kyle (4y) + PerfectLaugh"
 #define SMEXT_CONF_URL          "https://www.kxnrl.com/"
 #define SMEXT_CONF_LOGTAG       "Kxnrl.Message"
 #define SMEXT_CONF_LICENSE      "GPL"
@@ -34,9 +34,9 @@
 //#define SMEXT_ENABLE_DBMANAGER
 //#define SMEXT_ENABLE_GAMECONF
 //#define SMEXT_ENABLE_MEMUTILS
-#define SMEXT_ENABLE_GAMEHELPERS
-#define SMEXT_ENABLE_TIMERSYS
-#define SMEXT_ENABLE_THREADER
+//#define SMEXT_ENABLE_GAMEHELPERS
+//#define SMEXT_ENABLE_TIMERSYS
+//#define SMEXT_ENABLE_THREADER
 //#define SMEXT_ENABLE_LIBSYS
 //#define SMEXT_ENABLE_MENUS
 //#define SMEXT_ENABLE_ADTFACTORY

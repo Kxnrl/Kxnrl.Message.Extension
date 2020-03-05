@@ -253,11 +253,11 @@ void reportError(boost::system::system_error err)
 
 bool Send(const std::string &data)
 {
-    if (g_pTlsClient && g_pTlsClient->IsOpen()) {
+    if (g_pTlsClient) {
         g_pTlsClient->Send(data);
         return true;
     }
-    else if (g_pClient && g_pClient->IsOpen()) {
+    else if (g_pClient) {
         g_pClient->Send(data);
         return true;
     }
