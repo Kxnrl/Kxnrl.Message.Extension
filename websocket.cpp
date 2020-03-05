@@ -1,10 +1,8 @@
 #include <chrono>
-#include <boost/atomic.hpp>
 #include <boost/bind.hpp>
 #include <boost/beast.hpp>
 #include <boost/beast/ssl.hpp>
 
-#include "extension.h"
 #include "websocket.h"
 #include "message.h"
 

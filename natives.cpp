@@ -1,6 +1,5 @@
 #include <string>
 
-#include "extension.h"
 #include "natives.h"
 #include "message.h"
 
@@ -440,7 +439,7 @@ cell_t Native_ReadInt64(IPluginContext *pContext, const cell_t *params)
     pContext->LocalToString(params[2], &key);
 
     char val[32];
-    sprintf(val, "%lld", message->ReadInt64(key));
+    sprintf_s(val, sizeof val, "%lld", message->ReadInt64(key));
 
     return pContext->StringToLocal(params[3], static_cast<size_t>(params[4]), val);
 }

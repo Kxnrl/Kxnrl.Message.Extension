@@ -2,7 +2,6 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
-#include <vector>
 #include <queue>
 #include <mutex>
 
