@@ -1,3 +1,6 @@
+.vs
 .vscode
 build*
+msvc/[Rr]elease
+msvc/*.user
 sourcemod-*
