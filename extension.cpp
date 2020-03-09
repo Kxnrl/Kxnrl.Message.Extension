@@ -25,8 +25,8 @@ SMEXT_LINK(&g_kMessage);
 
 namespace beast = boost::beast;
 
-std::unique_ptr<boost::asio::io_context> g_IoContext;
-std::unique_ptr<boost::asio::io_context> g_GameContext;
+std::shared_ptr<boost::asio::io_context> g_IoContext;
+std::shared_ptr<boost::asio::io_context> g_GameContext;
 
 std::unique_ptr<boost::thread> g_pIoThread = nullptr;
 std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> g_pIoThreadWork = nullptr;
@@ -34,7 +34,7 @@ std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::execut
 std::unique_ptr<WSClient<beast::ssl_stream<beast::tcp_stream>>> g_pTlsClient = nullptr;
 std::unique_ptr<WSClient<beast::tcp_stream>> g_pClient = nullptr;
 
-std::mutex g_pSendQueue_Mutex;
+std::mutex g_SendQueue_Mutex;
 std::unique_ptr<std::queue<std::string>> g_pSendQueue = nullptr;
 std::unique_ptr<std::unordered_map<std::string, bool>> g_pSendMatch = nullptr;
 
@@ -44,6 +44,7 @@ IForward *g_fwdOnMessage = nullptr;
 MessageTypeHandler g_MessageTypeHandler;
 HandleType_t g_MessageHandleType;
 
+bool g_bClientRestarted;
 boost::atomic_float_t g_fInterval = 30.0;
 
 void OnGameFrame(bool simualting);
@@ -79,11 +80,11 @@ void SetClientWithUri(std::string uri)
         port = uri.substr(pos+1);
 
     if (ssl) {
-        g_pTlsClient = std::make_unique<WSClient<beast::ssl_stream<beast::tcp_stream>>>(host, port, path, *g_IoContext, *g_GameContext, g_fInterval.load());
+        g_pTlsClient = std::make_unique<WSClient<beast::ssl_stream<beast::tcp_stream>>>(host, port, path, g_IoContext, g_GameContext, g_fInterval.load());
         g_pTlsClient->Start();
     }
     else {
-        g_pClient = std::make_unique<WSClient<beast::tcp_stream>>(host, port, path, *g_IoContext, *g_GameContext, g_fInterval.load());
+        g_pClient = std::make_unique<WSClient<beast::tcp_stream>>(host, port, path, g_IoContext, g_GameContext, g_fInterval.load());
         g_pClient->Start();
     }
 }
@@ -131,8 +132,8 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     g_pSendMatch = std::make_unique<std::unordered_map<std::string, bool>>();
 
     // Initialize IO here.
-    g_IoContext = std::make_unique<boost::asio::io_context>();
-    g_GameContext = std::make_unique<boost::asio::io_context>();
+    g_IoContext = std::make_shared<boost::asio::io_context>();
+    g_GameContext = std::make_shared<boost::asio::io_context>();
     SetClientWithUri(g_Socket_Url);
 
     sharesys->RegisterLibrary(myself, "Kxnrl.Message");
@@ -170,23 +171,25 @@ void kMessage::SDK_OnUnload()
 
     CleanupClient();
 
+    // Stop io contexts
     if (g_pIoThread)
     {
         if (g_pIoThreadWork) {
             g_pIoThreadWork->reset();
         }
-        
+
         g_IoContext->stop();
 
         g_pIoThread->join();
         g_pIoThread = nullptr;
-
-        g_IoContext = nullptr;
     }
-
     g_GameContext->stop();
+
+    // Delete io contexts
+    g_IoContext = nullptr;
     g_GameContext = nullptr;
 
+    g_pSendMatch = nullptr;
     g_pSendQueue = nullptr;
 
     handlesys->RemoveType(g_MessageHandleType, myself->GetIdentity());
@@ -200,9 +203,10 @@ void kMessage::SDK_OnUnload()
 
 void OnGameFrame(bool simulating)
 {
+    g_bClientRestarted = false;
     {
         bool Send(const std::string &json);
-        std::lock_guard<std::mutex> lock_guard(g_pSendQueue_Mutex);
+        std::lock_guard<std::mutex> lock_guard(g_SendQueue_Mutex);
         while (g_pSendQueue->size() > 0) {
             if (!Send(g_pSendQueue->front())) {
                 break;
@@ -239,13 +243,17 @@ void pushBuffer(beast::flat_buffer buffer)
     }
 }
 
-void reportError(std::exception err)
+void reportError(boost::system::system_error err)
 {
-    smutils->LogMessage(myself, "Error: %s", err.what());
+    if (g_bClientRestarted) {
+        return;
+    }
+    smutils->LogMessage(myself, "Error: %s", err.code().message().c_str());
     smutils->LogMessage(myself, "Restarting the session");
 
     CleanupClient();
     SetClientWithUri(g_Socket_Url);
+    g_bClientRestarted = true;
 }
 
 void PushSendQueue(const std::string &data);
@@ -268,7 +276,7 @@ bool Send(const std::string &data)
 
 void PushSendQueue(const std::string &data)
 {
-    std::lock_guard<std::mutex> lock_guard(g_pSendQueue_Mutex);
+    std::lock_guard<std::mutex> lock_guard(g_SendQueue_Mutex);
     if (g_pSendMatch->find(data) == g_pSendMatch->end()) {
         g_pSendQueue->push(data);
         (*g_pSendMatch)[data] = true;

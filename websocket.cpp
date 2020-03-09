@@ -10,31 +10,30 @@ namespace beast = boost::beast;
 using tcp = boost::asio::ip::tcp;
 
 
-extern void reportError(std::exception err);
+extern void reportError(boost::system::system_error err);
 extern void pushBuffer(beast::flat_buffer buffer);
 
 template<typename S>
-WSClient<S>::WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval)
-    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_PingInterval(interval), m_IoContext(&netc), m_GameContext(&gamec)
+WSClient<S>::WSClient(std::string host, std::string port, std::string path, std::shared_ptr<boost::asio::io_context> netc, std::shared_ptr<boost::asio::io_context> gamec, float interval)
+    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_PingInterval(interval), m_IoContext(netc), m_GameContext(gamec)
 {
-    m_Ws = std::make_unique<boost::beast::websocket::stream<S>>(netc);
-    m_PingTimer = std::make_unique<boost::asio::steady_timer>(netc);
+    m_Ws = std::make_unique<boost::beast::websocket::stream<S>>(*netc);
+    m_PingTimer = std::make_unique<boost::asio::steady_timer>(*netc);
 }
 
 template<>
-WSClient<beast::ssl_stream<beast::tcp_stream>>::WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval)
-    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_PingInterval(interval), m_IoContext(&netc), m_GameContext(&gamec)
+WSClient<beast::ssl_stream<beast::tcp_stream>>::WSClient(std::string host, std::string port, std::string path, std::shared_ptr<boost::asio::io_context> netc, std::shared_ptr<boost::asio::io_context> gamec, float interval)
+    : m_Host(std::move(host)), m_Port(std::move(port)), m_Path(std::move(path)), m_PingInterval(interval), m_IoContext(netc), m_GameContext(gamec)
 {
     m_SslContext = std::make_unique<boost::asio::ssl::context>(boost::asio::ssl::context::tls_client);
-    m_Ws = std::make_unique<boost::beast::websocket::stream<beast::ssl_stream<beast::tcp_stream>>>(netc, *m_SslContext);
-    m_PingTimer = std::make_unique<boost::asio::steady_timer>(netc);
+    m_Ws = std::make_unique<boost::beast::websocket::stream<beast::ssl_stream<beast::tcp_stream>>>(*netc, *m_SslContext);
+    m_PingTimer = std::make_unique<boost::asio::steady_timer>(*netc);
 }
 
 template<typename S>
 void WSClient<S>::Start()
 {
-    boost::asio::co_spawn(*m_IoContext, boost::bind(&WSClient::co_entry, this), boost::asio::detached);
-    boost::asio::co_spawn(*m_IoContext, boost::bind(&WSClient::co_ping, this), boost::asio::detached);
+    boost::asio::spawn(*m_IoContext, boost::bind(&WSClient<S>::co_entry, this, _1));
 }
 
 template<typename S>
@@ -60,8 +59,17 @@ void WSClient<S>::Send(std::string data)
 template<typename S>
 void WSClient<S>::Stop()
 {
-    beast::get_lowest_layer(*m_Ws).cancel();
-    m_PingTimer->cancel();
+    if (IsOpen()) {
+        boost::system::error_code ec;
+        m_Ws->close(beast::websocket::close_reason(beast::websocket::close_code::normal), ec);
+    }
+
+    try {
+        m_PingTimer->cancel();
+    }
+    catch (std::exception &)
+    {
+    }
 }
 
 template<typename S>
@@ -71,24 +79,24 @@ bool WSClient<S>::IsOpen()
 }
 
 template<typename S>
-boost::asio::awaitable<void> WSClient<S>::co_entry()
+void WSClient<S>::co_entry(boost::asio::yield_context yield)
 {
     try {
         tcp::resolver resolver(*m_IoContext);
-        auto const results = co_await resolver.async_resolve(m_Host, m_Port, boost::asio::use_awaitable);
+        auto const results = resolver.async_resolve(m_Host, m_Port, yield);
         if (results.size() <= 0) {
             throw boost::system::system_error(boost::asio::error::netdb_errors::host_not_found);
         }
-        co_await co_run_stream(results);
+        co_run_stream(results, yield);
     }
-    catch (std::exception& err)
+    catch (boost::system::system_error& err)
     {
         boost::asio::dispatch(*m_GameContext, boost::bind(reportError, err));
     }
 }
 
 template<typename S>
-boost::asio::awaitable<void> WSClient<S>::co_run()
+void WSClient<S>::co_run(boost::asio::yield_context yield)
 {
     beast::get_lowest_layer(*m_Ws).expires_never();
 
@@ -100,24 +108,26 @@ boost::asio::awaitable<void> WSClient<S>::co_run()
                 "Kxnrl.Message.Extension");
         }));
 
-    co_await m_Ws->async_handshake(m_Host, m_Path, boost::asio::use_awaitable);
+    m_Ws->async_handshake(m_Host, m_Path, yield);
 
     smutils->LogMessage(myself, "Socket connected to ws%s://%s:%s", m_SslContext == nullptr ? "" : "s", m_Host.c_str(), m_Port.c_str());
 
+    boost::asio::spawn(*m_IoContext, boost::bind(&WSClient<S>::co_ping, this, _1));
+
     while (1) {
         beast::flat_buffer buffer;
-        co_await m_Ws->async_read(buffer, boost::asio::use_awaitable);
+        m_Ws->async_read(buffer, yield);
         boost::asio::dispatch(*m_GameContext, boost::bind(pushBuffer, buffer));
     }
 }
 
 template<typename S>
-boost::asio::awaitable<void> WSClient<S>::co_ping()
+void WSClient<S>::co_ping(boost::asio::yield_context yield)
 {
     try {
         while (1) {
             m_PingTimer->expires_after(std::chrono::milliseconds((int64_t)(m_PingInterval) * 1000));
-            co_await m_PingTimer->async_wait(boost::asio::use_awaitable);
+            m_PingTimer->async_wait(yield);
             
             auto message = std::make_unique<KMessage>(Message_Type::PingPong);
             message->WriteInt64("time", static_cast<int64_t>(std::time(NULL)));
@@ -133,24 +143,24 @@ boost::asio::awaitable<void> WSClient<S>::co_ping()
 }
 
 template<>
-boost::asio::awaitable<void> WSClient<beast::ssl_stream<beast::tcp_stream>>::co_run_stream(tcp::resolver::results_type results)
+void WSClient<beast::ssl_stream<beast::tcp_stream>>::co_run_stream(tcp::resolver::results_type results, boost::asio::yield_context yield)
 {
     beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(10));
-    co_await beast::get_lowest_layer(*m_Ws).async_connect(results, boost::asio::use_awaitable);
+    beast::get_lowest_layer(*m_Ws).async_connect(results, yield);
 
     beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(10));
-    co_await m_Ws->next_layer().async_handshake(boost::asio::ssl::stream_base::handshake_type::client, boost::asio::use_awaitable);
+    m_Ws->next_layer().async_handshake(boost::asio::ssl::stream_base::handshake_type::client, yield);
 
-    co_await co_run();
+    co_run(yield);
 }
 
 template<>
-boost::asio::awaitable<void> WSClient<beast::tcp_stream>::co_run_stream(tcp::resolver::results_type results)
+void WSClient<beast::tcp_stream>::co_run_stream(tcp::resolver::results_type results, boost::asio::yield_context yield)
 {
     beast::get_lowest_layer(*m_Ws).expires_after(std::chrono::seconds(30));
-    co_await beast::get_lowest_layer(*m_Ws).async_connect(results, boost::asio::use_awaitable);
+    beast::get_lowest_layer(*m_Ws).async_connect(results, yield);
 
-    co_await co_run();
+    co_run(yield);
 }
 
 template class WSClient<beast::ssl_stream<beast::tcp_stream>>;

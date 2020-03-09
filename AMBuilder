@@ -25,12 +25,6 @@ else:
 
 project.sources += sourceFiles
 
-if project.compiler.like('msvc'):
-  project.compiler.cxxflags += [ '/await', '/bigobj' ]
-else:
-  project.compiler.cxxflags += [ '-flto', '-fPIC', '-fcoroutines-ts', '-stdlib=libc++' ]
-  project.compiler.linkflags += [ '-flto', '-fPIC', '-s' ]
-
 if 'VCPKG_ROOT' in os.environ and 'VCPKG_TARGET_TRIPLET' in os.environ:
   vcpkg_root = os.environ['VCPKG_ROOT']
   vcpkg_triplet = os.path.join(vcpkg_root, 'installed', os.environ['VCPKG_TARGET_TRIPLET'])

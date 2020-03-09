@@ -7,6 +7,7 @@
 #include <string>
 
 #include <boost/asio.hpp>
+#include <boost/asio/spawn.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast.hpp>
 
@@ -14,7 +15,7 @@ template<typename S>
 class WSClient
 {
 public:
-    WSClient(std::string host, std::string port, std::string path, boost::asio::io_context& netc, boost::asio::io_context& gamec, float interval);
+    WSClient(std::string host, std::string port, std::string path, std::shared_ptr<boost::asio::io_context> netc, std::shared_ptr<boost::asio::io_context> gamec, float interval);
 
     void Start();
     void Send(std::string data);
@@ -23,10 +24,10 @@ public:
     bool IsOpen();
 
 public:
-    boost::asio::awaitable<void> co_entry();
-    boost::asio::awaitable<void> co_run_stream(boost::asio::ip::tcp::resolver::results_type results);
-    boost::asio::awaitable<void> co_run();
-    boost::asio::awaitable<void> co_ping();
+    void co_entry(boost::asio::yield_context yield);
+    void co_run_stream(boost::asio::ip::tcp::resolver::results_type results, boost::asio::yield_context yield);
+    void co_run(boost::asio::yield_context yield);
+    void co_ping(boost::asio::yield_context yield);
 
 private:
     std::string m_Host;
@@ -35,8 +36,8 @@ private:
     float m_PingInterval;
 
 private:
-    boost::asio::io_context* m_IoContext;
-    boost::asio::io_context* m_GameContext;
+    std::shared_ptr<boost::asio::io_context> m_IoContext;
+    std::shared_ptr<boost::asio::io_context> m_GameContext;
     std::unique_ptr<boost::beast::websocket::stream<S>> m_Ws;
     std::unique_ptr<boost::asio::ssl::context> m_SslContext;
     std::unique_ptr<boost::asio::steady_timer> m_PingTimer;
