@@ -267,19 +267,24 @@ bool Send(const std::string &data)
         g_pClient->Send(data);
         return true;
     }
-    else {
-        PushSendQueue(data);
-    }
-
+    PushSendQueue(data);
     return false;
 }
 
 void PushSendQueue(const std::string &data)
 {
-    std::lock_guard<std::mutex> lock_guard(g_SendQueue_Mutex);
+    bool locked = false;
+    if (std::try_lock(g_SendQueue_Mutex) == -1) {
+        locked = true;
+    }
+
     if (g_pSendMatch->find(data) == g_pSendMatch->end()) {
         g_pSendQueue->push(data);
         (*g_pSendMatch)[data] = true;
+    }
+
+    if (locked) {
+        g_SendQueue_Mutex.unlock();
     }
 }
 
