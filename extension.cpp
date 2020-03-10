@@ -273,10 +273,7 @@ bool Send(const std::string &data)
 
 void PushSendQueue(const std::string &data)
 {
-    bool locked = false;
-    if (std::try_lock(g_SendQueue_Mutex) == -1) {
-        locked = true;
-    }
+    bool locked = g_SendQueue_Mutex.try_lock();
 
     if (g_pSendMatch->find(data) == g_pSendMatch->end()) {
         g_pSendQueue->push(data);
