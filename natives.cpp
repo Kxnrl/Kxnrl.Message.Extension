@@ -113,10 +113,7 @@ cell_t Native_Send(IPluginContext *pContext, const cell_t *params)
         }
     }
 
-    if (!Send(json)) {
-        PushSendQueue(json);
-    }
-    return 1;
+    return Send(json) ? 1 : 0;
 }
 
 cell_t Native_RawJson(IPluginContext *pContext, const cell_t *params)
