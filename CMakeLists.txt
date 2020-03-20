@@ -4,9 +4,9 @@ project(${EXTENSION})
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(HL2SDK_PATH CACHE STRING "${CMAKE_SOURCE_DIR}/hl2sdk-csgo")
-set(SOURCEMOD_PATH CACHE STRING "${CMAKE_SOURCE_DIR}/sourcemod")
-set(METAMOD_SOURCE_PATH CACHE STRING "${CMAKE_SOURCE_DIR}/metamod-source")
+set(HL2SDK_PATH CACHE PATH "${CMAKE_SOURCE_DIR}/hl2sdk-csgo")
+set(SOURCEMOD_PATH CACHE PATH "${CMAKE_SOURCE_DIR}/sourcemod")
+set(METAMOD_SOURCE_PATH CACHE PATH "${CMAKE_SOURCE_DIR}/metamod-source")
 include(cmake/smsdk_ext.cmake)
 
 find_package(Boost REQUIRED coroutine thread)
