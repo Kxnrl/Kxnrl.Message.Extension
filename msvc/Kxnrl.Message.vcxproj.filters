@@ -43,5 +43,8 @@
     <ClInclude Include="..\websocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\SendQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
