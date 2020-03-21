@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-set(EXTENSION Kxnrl.Message)
+set(EXTENSION kxnrl.message)
 project(${EXTENSION})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -24,4 +24,4 @@ target_include_directories(${EXTENSION} PUBLIC
         )
 
 target_link_libraries(${EXTENSION} PUBLIC smsdk_ext Boost::headers Boost::coroutine Boost::thread OpenSSL::SSL jsoncpp_lib)
-set_target_properties(${EXTENSION} PROPERTIES PREFIX "" SUFFIX ".csgo.ext${HL2SDK_LIB_SHARED_EXT}")
+set_target_properties(${EXTENSION} PROPERTIES PREFIX "" SUFFIX ".ext${HL2SDK_LIB_SHARED_EXT}")
