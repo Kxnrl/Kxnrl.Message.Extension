@@ -18,6 +18,7 @@
 #include "websocket.h"
 #include "message.h"
 #include "natives.h"
+#include "SendQueue.h"
 
 
 kMessage g_kMessage;
@@ -34,9 +35,7 @@ std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::execut
 std::unique_ptr<WSClient<beast::ssl_stream<beast::tcp_stream>>> g_pTlsClient = nullptr;
 std::unique_ptr<WSClient<beast::tcp_stream>> g_pClient = nullptr;
 
-std::mutex g_SendQueue_Mutex;
-std::unique_ptr<std::queue<std::string>> g_pSendQueue = nullptr;
-std::unique_ptr<std::unordered_map<std::string, bool>> g_pSendMatch = nullptr;
+std::shared_ptr<SendQueue> g_pAtomicSendQueue = nullptr;
 
 std::string g_Socket_Url;
 IForward *g_fwdOnMessage = nullptr;
@@ -128,8 +127,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
     g_MessageHandleType = handlesys->CreateType("Message", &g_MessageTypeHandler, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
-    g_pSendQueue = std::make_unique<std::queue<std::string>>();
-    g_pSendMatch = std::make_unique<std::unordered_map<std::string, bool>>();
+    g_pAtomicSendQueue = std::make_shared<SendQueue>();
 
     // Initialize IO here.
     g_IoContext = std::make_shared<boost::asio::io_context>();
@@ -189,8 +187,7 @@ void kMessage::SDK_OnUnload()
     g_IoContext = nullptr;
     g_GameContext = nullptr;
 
-    g_pSendMatch = nullptr;
-    g_pSendQueue = nullptr;
+    g_pAtomicSendQueue = nullptr;
 
     handlesys->RemoveType(g_MessageHandleType, myself->GetIdentity());
 
@@ -206,14 +203,16 @@ void OnGameFrame(bool simulating)
     g_bClientRestarted = false;
     {
         bool Send(const std::string &json);
-        std::lock_guard<std::mutex> lock_guard(g_SendQueue_Mutex);
-        while (g_pSendQueue->size() > 0) {
-            if (!Send(g_pSendQueue->front())) {
-                break;
-            }
-            g_pSendMatch->erase(g_pSendQueue->front());
-            g_pSendQueue->pop();
-        }
+        void PushSendQueue(const std::string &json);
+        std::vector<std::string> CurrentSendQueue;
+        g_pAtomicSendQueue->move_all(std::back_inserter(CurrentSendQueue));
+        // make all message unique
+        std::sort(CurrentSendQueue.begin(), CurrentSendQueue.end());
+        CurrentSendQueue.erase(std::unique(CurrentSendQueue.begin(), CurrentSendQueue.end()), CurrentSendQueue.end());
+        // find the first that fails to send
+        auto iter = std::find_if_not(CurrentSendQueue.begin(), CurrentSendQueue.end(), Send);
+        // push the rest back to g_pAtomicSendQueue
+        std::for_each(iter, CurrentSendQueue.end(), PushSendQueue);
     }
     g_GameContext->run();
 }
@@ -273,16 +272,7 @@ bool Send(const std::string &data)
 
 void PushSendQueue(const std::string &data)
 {
-    bool locked = g_SendQueue_Mutex.try_lock();
-
-    if (g_pSendMatch->find(data) == g_pSendMatch->end()) {
-        g_pSendQueue->push(data);
-        (*g_pSendMatch)[data] = true;
-    }
-
-    if (locked) {
-        g_SendQueue_Mutex.unlock();
-    }
+    g_pAtomicSendQueue->push(data);
 }
 
 cell_t Native_IsConnected(IPluginContext *pContext, const cell_t *params)
