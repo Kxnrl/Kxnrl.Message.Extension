@@ -278,9 +278,11 @@ private:
 
     void OnOpen(connection_hdl hdl)
     {
+        m_Retries = 0;
         m_bConnecting = false;
         m_bConnected = true;
         m_Connection_hdl = hdl;
+        g_bSocketConnects = true;
 
         smutils->LogMessage(myself, "Socket conneted to \"%s\".", g_Socket_Url.c_str());
 

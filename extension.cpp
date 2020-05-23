@@ -12,6 +12,7 @@ IThreadHandle *websocket_thread;
 
 // IForwardManager
 IForward *g_fwdOnMessage = NULL;
+IForward* g_fwdOnConnect = NULL;
 
 // socket
 string g_Socket_Url;
@@ -23,6 +24,7 @@ SMEXT_LINK(&g_kMessage);
 
 void OnGameFrame(bool simualting);
 bool g_bRequireRestart = false;
+bool g_bSocketConnects = false;
 
 MessageTypeHandler g_MessageTypeHandler;
 HandleType_t g_MessageHandleType;
@@ -37,6 +39,13 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
         smutils->Format(error, maxlength, "Failed to create forward 'OnMessageReceived'.");
         return false;
     }
+
+    g_fwdOnConnect = forwards->CreateForward("OnSocketConnected", ET_Ignore, 0, NULL);
+	if (!g_fwdOnConnect)
+	{
+        smutils->Format(error, maxlength, "Failed to create forward 'OnSocketConnected'.");
+        return false;
+	}
 
     // Uri
     printf_s("%sInit socket uri...\n", THIS_PREFIX);
@@ -100,6 +109,12 @@ void kMessage::SDK_OnUnload()
         g_fwdOnMessage = NULL;
     }
 
+	if (g_fwdOnConnect)
+	{
+        forwards->ReleaseForward(g_fwdOnConnect);
+        g_fwdOnConnect = NULL;
+	}
+
     if (websocket_thread != NULL)
     {
         Shutdown();
@@ -116,6 +131,13 @@ void OnGameFrame(bool simulating)
         g_bRequireRestart = false;
         return;
     }
+
+	if (g_bSocketConnects)
+	{
+        g_bSocketConnects = false;
+        g_fwdOnConnect->Execute();
+        return;
+	}
 
 begin:
     if (g_tRecvQueue.empty())

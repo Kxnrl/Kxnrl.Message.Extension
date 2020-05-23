@@ -15,6 +15,7 @@ public:
 
 extern std::string g_Socket_Url;
 extern bool g_bRequireRestart;
+extern bool g_bSocketConnects;
 extern HandleType_t g_MessageHandleType;
 
 void PushMessage(std::string message);

@@ -6,6 +6,7 @@ os:
 branches:
   only:
   - master
+  - stable
   except:
   - /^(?i:deploy)-.*$/
   - /^(?i:release)-.*$/
@@ -34,6 +35,6 @@ deploy:
   file:
       - msvc15/Release/kxnrl.message.ext.dll
   on:
-      condition: "$BRANCH = 1.10-dev"
+      condition: "$BRANCH = master"
       repo: Kxnrl/Kxnrl.Message.Extension
       all_branches: true
