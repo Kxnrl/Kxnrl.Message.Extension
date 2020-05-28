@@ -8,7 +8,7 @@ git clone https://github.com/alliedmodders/sourcemod --recursive --branch $BRANC
 
 mkdir -p "$EXT_DIR/build"
 pushd "$EXT_DIR/build"
-python "$EXT_DIR/configure.py" --enable-optimize --sm-path "$EXT_DIR/sourcemod-$BRANCH"
+python3 "$EXT_DIR/configure.py" --enable-optimize --sm-path "$EXT_DIR/sourcemod-$BRANCH"
 ambuild
 
 # might be optional
