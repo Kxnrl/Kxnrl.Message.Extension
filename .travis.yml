@@ -3,6 +3,7 @@ language: cpp
 branches:
   only:
   - master
+  - stable
   except:
   - /^(?i:deploy)-.*$/
   - /^(?i:release)-.*$/
