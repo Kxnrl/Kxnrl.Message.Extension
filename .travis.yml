@@ -12,10 +12,6 @@ env:
   global:
    - DEPS_DIR=${HOME}/deps
 
-cache:
-  directories:
-    - build/package/addons/sourcemod/extensions
-
 before_install:
   - git clone https://github.com/alliedmodders/ambuild ${DEPS_DIR}/ambuild
 
@@ -26,12 +22,11 @@ jobs:
     python: 3.8
     env:
       - BRANCH=1.10-dev
-      - VCPKG_TARGET_TRIPLET=x86-linux-sm
     before_script:
       - sudo apt-get install -y gcc-multilib g++-multilib binutils
       - |
         pushd ${DEPS_DIR}/ambuild
-        sudo python setup.py install
+        sudo python3 setup.py install
         popd
       - chmod +x build.sh
     script:
