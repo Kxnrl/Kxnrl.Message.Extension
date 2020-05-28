@@ -59,7 +59,7 @@ public:
         static char buffer[128];
         memset(buffer, 0, sizeof(buffer));
         smutils->Format(buffer, sizeof(buffer), "%sHeartBeat: %d\n", THIS_PREFIX, ++count);
-        printf(buffer);
+        printf("%s", buffer);
 
         return Pl_Continue;
     }
