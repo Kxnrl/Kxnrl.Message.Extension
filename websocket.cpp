@@ -59,7 +59,7 @@ public:
         static char buffer[128];
         memset(buffer, 0, sizeof(buffer));
         smutils->Format(buffer, sizeof(buffer), "%sHeartBeat: %d\n", THIS_PREFIX, ++count);
-        printf_s(buffer);
+        printf(buffer);
 
         return Pl_Continue;
     }
@@ -111,7 +111,7 @@ public:
     void Shutdown()
     {
         m_bClosing = true;
-        printf_s("%s Shutdown websocket client.\n", THIS_PREFIX);
+        printf("%s Shutdown websocket client.\n", THIS_PREFIX);
 
         if (m_bConnected)
         {
@@ -169,25 +169,25 @@ private:
         if (init)
         {
             // ASIO
-            printf_s("%sInit socket asio service...\n", THIS_PREFIX);
+            printf("%sInit socket asio service...\n", THIS_PREFIX);
             m_WebSocket.init_asio();
         }
         else
         {
             // Reset
-            printf_s("%sReset socket asio service...\n", THIS_PREFIX);
+            printf("%sReset socket asio service...\n", THIS_PREFIX);
             m_WebSocket.reset();
         }
 
         // Log
-        printf_s("%sSet socket log level...\n", THIS_PREFIX);
+        printf("%sSet socket log level...\n", THIS_PREFIX);
         m_WebSocket.set_access_channels(ws_log::alevel::none);
         m_WebSocket.set_error_channels(ws_log::elevel::fatal);
         m_WebSocket.clear_access_channels(ws_log::alevel::frame_header);
         m_WebSocket.clear_access_channels(ws_log::alevel::frame_payload);
 
         // User-Agent
-        printf_s("%sSet socket user-agent...\n", THIS_PREFIX);
+        printf("%sSet socket user-agent...\n", THIS_PREFIX);
         m_WebSocket.set_user_agent("Kxnrl.Message Extension");
 
         // Params
@@ -195,14 +195,14 @@ private:
         m_WebSocket.set_open_handshake_timeout(10000);
 
         // Event Handlers
-        printf_s("%sSet event handler...\n", THIS_PREFIX);
+        printf("%sSet event handler...\n", THIS_PREFIX);
         m_WebSocket.set_open_handler(bind(&self::OnOpen, this, websocketpp::lib::placeholders::_1));
         m_WebSocket.set_fail_handler(bind(&self::OnFail, this, websocketpp::lib::placeholders::_1));
         m_WebSocket.set_message_handler(bind(&self::OnMessage, this, websocketpp::lib::placeholders::_1, websocketpp::lib::placeholders::_2));
         m_WebSocket.set_close_handler(bind(&self::OnClose, this, websocketpp::lib::placeholders::_1));
 
         // Connection Ptr
-        printf_s("%sGet connection ptr...\n", THIS_PREFIX);
+        printf("%sGet connection ptr...\n", THIS_PREFIX);
         ws_lib::error_code ec; 
         m_Connection_ptr = m_WebSocket.get_connection(g_Socket_Url, ec);
         if (ec)
@@ -228,7 +228,7 @@ private:
     retry:
         if (m_bClosing)
         {
-            printf_s("%s OnClosing, DO NOT make connection.\n", THIS_PREFIX);
+            printf("%s OnClosing, DO NOT make connection.\n", THIS_PREFIX);
             return false;
         }
 
@@ -240,7 +240,7 @@ private:
         {
             // flag
             m_bConnecting = true;
-            printf_s("%s #%d Socket connecting to \"%s\"...\n", THIS_PREFIX, m_Retries, g_Socket_Url.c_str());
+            printf("%s #%d Socket connecting to \"%s\"...\n", THIS_PREFIX, m_Retries, g_Socket_Url.c_str());
 
             // go
             m_WebSocket.connect(m_Connection_ptr);
@@ -261,7 +261,7 @@ private:
     void Disconnect()
     {
         m_bClosing = true;
-        printf_s("%s Disconnecting...\n", THIS_PREFIX);
+        printf("%s Disconnecting...\n", THIS_PREFIX);
 
         if (m_bConnected)
         {

@@ -32,7 +32,7 @@ HandleType_t g_MessageHandleType;
 bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
     // Forward
-    printf_s("%sInit forwardsys...\n", THIS_PREFIX);
+    printf("%sInit forwardsys...\n", THIS_PREFIX);
     g_fwdOnMessage = forwards->CreateForward("OnMessageReceived", ET_Ignore, 1, NULL, Param_Cell);
     if (!g_fwdOnMessage)
     {
@@ -48,7 +48,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 
     // Uri
-    printf_s("%sInit socket uri...\n", THIS_PREFIX);
+    printf("%sInit socket uri...\n", THIS_PREFIX);
     const char *uri = smutils->GetCoreConfigValue("WebSocket_Uri");
     if (uri == NULL)
     {
@@ -58,11 +58,11 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
     else
     {
         g_Socket_Url = uri;
-        printf_s("%sSocket uri [%s]...\n", THIS_PREFIX, uri);
+        printf("%sSocket uri [%s]...\n", THIS_PREFIX, uri);
     }
 
     // Interval
-    printf_s("%sInit heartbeat...\n", THIS_PREFIX);
+    printf("%sInit heartbeat...\n", THIS_PREFIX);
     const char *val = smutils->GetCoreConfigValue("WebSocket_Heartbeat_Interval");
     float interval = 30.0f;
     if (val == NULL)
@@ -75,10 +75,10 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
         interval = (float)atof(val);
         if (interval < 10.0f) interval = 10.0f;
         if (interval > 999.9f) interval = 999.9f;
-        printf_s("%sSocket heartbeat interval [%.1f]...\n", THIS_PREFIX, interval);
+        printf("%sSocket heartbeat interval [%.1f]...\n", THIS_PREFIX, interval);
     }
 
-    printf_s("%sInit socket thread...\n", THIS_PREFIX);
+    printf("%sInit socket thread...\n", THIS_PREFIX);
     websocket_thread = CreateThread(interval);
     if (websocket_thread == NULL)
     {
@@ -86,7 +86,7 @@ bool kMessage::SDK_OnLoad(char *error, size_t maxlength, bool late)
         return false;
     }
 
-    printf_s("%sInit handlesys...\n", THIS_PREFIX);
+    printf("%sInit handlesys...\n", THIS_PREFIX);
     g_MessageHandleType = handlesys->CreateType("Message", &g_MessageTypeHandler, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
     sharesys->RegisterLibrary(myself, "Kxnrl.Message");

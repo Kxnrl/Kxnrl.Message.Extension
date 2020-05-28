@@ -1,0 +1,40 @@
+language: cpp
+
+os:
+  - windows
+
+branches:
+  only:
+  - master
+  - stable
+  except:
+  - /^(?i:deploy)-.*$/
+  - /^(?i:release)-.*$/
+
+env:
+  - BRANCH=1.10-dev
+  - BRANCH=master
+
+before_script:
+  - choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
+
+script:
+  - ./build.bat
+
+before_deploy:
+  # Set up git user name and tag this commit
+  - git config --local user.name "Kxnrl"
+  - git config --local user.email "kyle@kxnrl.com"
+  - export TRAVIS_TAG=deploy-$TRAVIS_BUILD_NUMBER
+  - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key: $TOKEN
+  file:
+      - msvc15/Release/kxnrl.message.ext.dll
+  on:
+      condition: "$BRANCH = master"
+      repo: Kxnrl/Kxnrl.Message.Extension
+      all_branches: true
