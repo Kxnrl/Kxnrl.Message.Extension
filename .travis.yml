@@ -39,7 +39,7 @@ jobs:
       - BRANCH=1.10-dev
       - PATH=/c/Python38:/c/Python38/Scripts:${PATH}
     before_script:
-      - choco install -y visualstudio2017buildtools python3 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81 --add Microsoft.VisualStudio.Component.WinXP";
+      - choco install -y visualstudio2019buildtools python3 --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64";
       - |
         pushd ${DEPS_DIR}/ambuild
         python setup.py install

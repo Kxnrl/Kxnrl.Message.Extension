@@ -1,11 +1,11 @@
 set EXT_DIR="%cd%"
-set VCVARSALL="C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"
+set VCVARSALL="C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"
 
 if "%VSCMD_VER%"=="" (
 	set MAKE=
 	set CC=
 	set CXX=
-	call %VCVARSALL% x86 8.1
+	call %VCVARSALL% x86
 )
 
 git clone https://github.com/alliedmodders/sourcemod --recursive --branch "%BRANCH%" --single-branch "%EXT_DIR%/sourcemod-%BRANCH%"
