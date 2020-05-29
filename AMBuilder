@@ -26,7 +26,7 @@ else:
 project.sources += sourceFiles
 
 if project.compiler.like('gcc'):
-  project.compiler.cxxflags += ['-std=c++14']
+  project.compiler.cxxflags += ['-std=c++11']
 
 lib_path = os.path.join(builder.sourcePath, 'lib', sys.platform)
 libs = [os.path.join(lib_path, f) for f in os.listdir(lib_path) if os.path.isfile(os.path.join(lib_path, f)) and (f.endswith('.a') or f.endswith('.lib'))]
