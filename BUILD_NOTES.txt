@@ -1,0 +1,2 @@
+cmake -G Ninja -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS_RELEASE="/MT" -DCMAKE_BUILD_TYPE=Release ..
+./b2 link=static runtime-link=static address-model=32 variant=release --with-system --with-thread --with-date_time --with-regex --with-serialization --with-random --build-dir=./tmp_build install --prefix=./stage_install_win32 -j12

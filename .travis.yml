@@ -18,8 +18,8 @@ before_install:
 jobs:
   include:
   - name: Linux
-    dist: bionic
-    python: 3.8
+    dist: xenial
+    python: 3
     env:
       - BRANCH=1.10-dev
     before_script:
