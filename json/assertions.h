@@ -6,8 +6,8 @@
 #ifndef CPPTL_JSON_ASSERTIONS_H_INCLUDED
 #define CPPTL_JSON_ASSERTIONS_H_INCLUDED
 
+#include <cstdlib>
 #include <sstream>
-#include <stdlib.h>
 
 #if !defined(JSON_IS_AMALGAMATION)
 #include "config.h"
@@ -29,7 +29,7 @@
 
 #define JSON_FAIL_MESSAGE(message)                                             \
   {                                                                            \
-    JSONCPP_OSTRINGSTREAM oss;                                                 \
+    OStringStream oss;                                                         \
     oss << message;                                                            \
     Json::throwLogicError(oss.str());                                          \
     abort();                                                                   \
@@ -43,7 +43,7 @@
 // release builds we abort, for a core-dump or debugger.
 #define JSON_FAIL_MESSAGE(message)                                             \
   {                                                                            \
-    JSONCPP_OSTRINGSTREAM oss;                                                 \
+    OStringStream oss;                                                         \
     oss << message;                                                            \
     assert(false && oss.str().c_str());                                        \
     abort();                                                                   \
