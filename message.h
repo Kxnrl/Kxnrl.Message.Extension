@@ -32,6 +32,7 @@ enum Message_Type
     Server_PushEvents   = 112,
     Server_PushMaps     = 113,
     Server_LoadMaps     = 114,
+    Server_SendClient   = 115,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -134,6 +135,9 @@ enum Message_Type
     Stats_TT_LoadUser   = 1121,
     Stats_TT_Update     = 1122,
     Stats_TT_Session    = 1123,
+	Stats_TT_Ranking    = 1124,
+	Stats_TT_MapWeapons = 1125,
+	Stats_TT_AddMapGun  = 1126,
 
     // L4D2->V
     Stats_L2_LoadUser   = 1201,
@@ -509,6 +513,7 @@ private:
         case Message_Type::Server_PushEvents:
         case Message_Type::Server_PushMaps:
         case Message_Type::Server_LoadMaps:
+        case Message_Type::Server_SendClient:
         case Message_Type::Forums_LoadUser:
         case Message_Type::Forums_LoadAll:
         case Message_Type::Broadcast_Chat:
@@ -576,6 +581,9 @@ private:
         case Message_Type::Stats_TT_LoadUser:
         case Message_Type::Stats_TT_Update:
         case Message_Type::Stats_TT_Session:
+        case Message_Type::Stats_TT_Ranking:
+        case Message_Type::Stats_TT_MapWeapons:
+        case Message_Type::Stats_TT_AddMapGun:
         case Message_Type::Stats_L2_LoadUser:
         case Message_Type::Stats_L2_Update:
         case Message_Type::Stats_L2_Session:
