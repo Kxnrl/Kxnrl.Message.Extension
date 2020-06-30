@@ -33,6 +33,8 @@ enum Message_Type
     Server_PushMaps     = 113,
     Server_LoadMaps     = 114,
     Server_SendClient   = 115,
+	Server_PushMapCD    = 116,
+	Server_QueryMapCD   = 117,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -117,47 +119,30 @@ enum Message_Type
     Stats_DailySignIn   = 1004,
 
     // CSGO->MiniGames
-    Stats_MG_LoadUser   = 1101,
-    Stats_MG_Update     = 1102,
-    Stats_MG_Session    = 1103,
-    Stats_MG_Trace      = 1104,
-    Stats_MG_Ranking    = 1105,
-    Stats_MG_Details    = 1106,
+    Ranking_MG_LoadUser = 1101,
+    Ranking_MG_Update   = 1102,
+    Ranking_MG_Session  = 1103,
+    Ranking_MG_Trace    = 1104,
+    Ranking_MG_Ranking  = 1105,
+    Ranking_MG_Details  = 1106,
 
     // CSGO->ZombieEscape
-    Stast_ZE_LoadUser   = 1111,
-    Stast_ZE_Update     = 1112,
-    Stats_ZE_Session    = 1113,
-    Stats_ZE_Ranking    = 1114,
-    Stats_ZE_Details    = 1115,
+    Ranking_ZE_LoadUser = 1111,
+    Ranking_ZE_Update   = 1112,
+    Ranking_ZE_Session  = 1113,
+    Ranking_ZE_Ranking  = 1114,
+    Ranking_ZE_Details  = 1115,
 
     // CSGO->TTT
-    Stats_TT_LoadUser   = 1121,
-    Stats_TT_Update     = 1122,
-    Stats_TT_Session    = 1123,
-	Stats_TT_Ranking    = 1124,
-	Stats_TT_MapWeapons = 1125,
-	Stats_TT_AddMapGun  = 1126,
+    Ranking_TT_LoadUser = 1121,
+    Ranking_TT_Update   = 1122,
+    Ranking_TT_Session  = 1123,
 
-    // L4D2->V
-    Stats_L2_LoadUser   = 1201,
-    Stats_L2_Update     = 1202,
-    Stats_L2_Session    = 1203,
-
-    // INS->PVP
-    Stats_IS_LoadUser   = 1301,
-    Stats_IS_Update     = 1302,
-    Stats_IS_Session    = 1303,
-    Stats_IS_Ranking    = 1304,
-    Stats_IS_Trace      = 1305,
-    Stats_IS_LoadAll    = 1306,
-
-    /* Active */
-    Acts_LoadUser       = 1999,
-    Acts_SyncUser       = 1998,
-    Acts_UpdateUserTask = 1997,
-    Acts_Exchange       = 1996,
-    Acts_Accomplished   = 1995,
+    // CSGO->JB
+    Ranking_JB_LoadUser = 1131,
+    Ranking_JB_Update   = 1132,
+    Ranking_JB_Session  = 1133,
+    Ranking_JB_Ranking  = 1134,
 
     // End
     MaxMessage          = 2000
@@ -567,37 +552,24 @@ private:
         case Message_Type::Stats_Analytics:
         case Message_Type::Stats_Update:
         case Message_Type::Stats_DailySignIn:
-        case Message_Type::Stats_MG_LoadUser:
-        case Message_Type::Stats_MG_Update:
-        case Message_Type::Stats_MG_Session:
-        case Message_Type::Stats_MG_Trace:
-        case Message_Type::Stats_MG_Ranking:
-        case Message_Type::Stats_MG_Details:
-        case Message_Type::Stast_ZE_LoadUser:
-        case Message_Type::Stast_ZE_Update:
-        case Message_Type::Stats_ZE_Session:
-        case Message_Type::Stats_ZE_Ranking:
-        case Message_Type::Stats_ZE_Details:
-        case Message_Type::Stats_TT_LoadUser:
-        case Message_Type::Stats_TT_Update:
-        case Message_Type::Stats_TT_Session:
-        case Message_Type::Stats_TT_Ranking:
-        case Message_Type::Stats_TT_MapWeapons:
-        case Message_Type::Stats_TT_AddMapGun:
-        case Message_Type::Stats_L2_LoadUser:
-        case Message_Type::Stats_L2_Update:
-        case Message_Type::Stats_L2_Session:
-        case Message_Type::Stats_IS_LoadUser:
-        case Message_Type::Stats_IS_Update:
-        case Message_Type::Stats_IS_Session:
-        case Message_Type::Stats_IS_Ranking:
-        case Message_Type::Stats_IS_Trace:
-        case Message_Type::Stats_IS_LoadAll:
-        case Message_Type::Acts_LoadUser:
-        case Message_Type::Acts_SyncUser:
-        case Message_Type::Acts_UpdateUserTask:
-        case Message_Type::Acts_Exchange:
-        case Message_Type::Acts_Accomplished:
+        case Message_Type::Ranking_MG_LoadUser:
+        case Message_Type::Ranking_MG_Update:
+        case Message_Type::Ranking_MG_Session:
+        case Message_Type::Ranking_MG_Trace:
+        case Message_Type::Ranking_MG_Ranking:
+        case Message_Type::Ranking_MG_Details:
+        case Message_Type::Ranking_ZE_LoadUser:
+        case Message_Type::Ranking_ZE_Update:
+        case Message_Type::Ranking_ZE_Session:
+        case Message_Type::Ranking_ZE_Ranking:
+        case Message_Type::Ranking_ZE_Details:
+        case Message_Type::Ranking_TT_LoadUser:
+        case Message_Type::Ranking_TT_Update:
+        case Message_Type::Ranking_TT_Session:
+        case Message_Type::Ranking_JB_LoadUser:
+        case Message_Type::Ranking_JB_Update:
+        case Message_Type::Ranking_JB_Session:
+        case Message_Type::Ranking_JB_Ranking:
             return true;
         }
 
