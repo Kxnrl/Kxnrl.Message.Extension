@@ -144,6 +144,18 @@ enum Message_Type
     Ranking_JB_Session  = 1133,
     Ranking_JB_Ranking  = 1134,
 
+	// CSGO->FFA
+	Ranking_FA_LoadUser = 1141,
+	Ranking_FA_Update   = 1142,
+	Ranking_FA_Session  = 1143,
+	Ranking_FA_Ranking  = 1144,
+
+	// CSGO->Casual
+	Ranking_CS_LoadUser = 1151,
+	Ranking_CS_Update   = 1152,
+	Ranking_CS_Session  = 1153,
+	Ranking_CS_Ranking  = 1154,
+
     // End
     MaxMessage          = 2000
 };
@@ -570,6 +582,14 @@ private:
         case Message_Type::Ranking_JB_Update:
         case Message_Type::Ranking_JB_Session:
         case Message_Type::Ranking_JB_Ranking:
+        case Message_Type::Ranking_FA_LoadUser:
+        case Message_Type::Ranking_FA_Update:
+        case Message_Type::Ranking_FA_Session:
+        case Message_Type::Ranking_FA_Ranking:
+        case Message_Type::Ranking_CS_LoadUser:
+        case Message_Type::Ranking_CS_Update:
+        case Message_Type::Ranking_CS_Session:
+        case Message_Type::Ranking_CS_Ranking:
             return true;
         }
 
