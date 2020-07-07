@@ -142,12 +142,18 @@ private:
     void PushQueue()
     {
         // push all local storage
-        if (m_bQueue.size() <= 0)
+        if (m_bQueue.empty())
             return;
 
-        for (auto iter = m_bQueue.begin(); iter != m_bQueue.end();)
+        auto iter = m_bQueue.begin();
+        while (iter != m_bQueue.end())
         {
-            Send(iter->first);
+            if (!Send(iter->first))
+            {
+                smutils->LogMessage(myself, "Failed to resend -> %s", iter->first.c_str());
+                break;
+            }
+            smutils->LogMessage(myself, "Resend -> %s", iter->first.c_str());
             iter = m_bQueue.erase(iter);
         }
     }
