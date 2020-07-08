@@ -88,11 +88,14 @@ public:
         return m_bConnected && !m_bClosing;
     }
 
-    bool Send(string message)
+    bool Send(string message, bool isResend = false)
     {
         if (!Available())
         {
-            SaveQueue(message);
+        	if (!isResend)
+        	{
+                SaveQueue(message);
+        	}
             return false;
         }
 
@@ -141,6 +144,8 @@ private:
 
     void PushQueue()
     {
+        smutils->LogMessage(myself, "Begin push queue -> %d messages in queue.", m_bQueue.size());
+    	
         // push all local storage
         if (m_bQueue.empty())
             return;
@@ -148,7 +153,7 @@ private:
         auto iter = m_bQueue.begin();
         while (iter != m_bQueue.end())
         {
-            if (!Send(iter->first))
+            if (!Send(iter->first, true))
             {
                 smutils->LogMessage(myself, "Failed to resend -> %s", iter->first.c_str());
                 break;
@@ -156,6 +161,8 @@ private:
             smutils->LogMessage(myself, "Resend -> %s", iter->first.c_str());
             iter = m_bQueue.erase(iter);
         }
+
+        smutils->LogMessage(myself, "Handled all messages in queue");
     }
 
 private:
