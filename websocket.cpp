@@ -96,15 +96,23 @@ public:
         	{
                 SaveQueue(message);
         	}
+            else
+            {
+                smutils->LogMessage(myself, "Resend message still falling because ready state error.");
+            }
             return false;
         }
 
         g_LastSent = time(NULL);
         errcode ec;
+        printf("%sSend->[%s]\n", THIS_PREFIX, message.c_str());
         m_WebSocket.send(m_Connection_hdl, message, opcode::text, ec);
         if (ec)
         {
-            SaveQueue(message);
+        	if (!isResend)
+        	{
+                SaveQueue(message);
+        	}  
             smutils->LogError(myself, "Failed to send message to server: %s -> [%s]", ec.message().c_str(), message.c_str());
             return false;
         }
@@ -144,11 +152,11 @@ private:
 
     void PushQueue()
     {
-        smutils->LogMessage(myself, "Begin push queue -> %d messages in queue.", m_bQueue.size());
-    	
         // push all local storage
         if (m_bQueue.empty())
             return;
+
+        smutils->LogMessage(myself, "Begin push queue -> %d messages in queue.", m_bQueue.size());
 
         auto iter = m_bQueue.begin();
         while (iter != m_bQueue.end())
@@ -304,6 +312,7 @@ private:
 
         g_LastSent = time(NULL);
         g_HeartBeat = timersys->CreateTimer(&g_HeartBeatTimer, 1.0f, NULL, TIMER_FLAG_REPEAT);
+        smutils->LogMessage(myself, "Starting heartbeat timer.");
     }
 
     void OnFail(connection_hdl hdl)
