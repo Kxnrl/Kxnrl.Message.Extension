@@ -106,6 +106,7 @@ public:
         g_LastSent = time(NULL);
         errcode ec;
         printf("%sSend->[%s]\n", THIS_PREFIX, message.c_str());
+        smutils->LogError(myself, "Send->\n%s", message.c_str());
         m_WebSocket.send(m_Connection_hdl, message, opcode::text, ec);
         if (ec)
         {
@@ -378,6 +379,7 @@ private:
             return;
         }
 
+        smutils->LogError(myself, "Recv->\n%s", msg->get_payload().c_str());
         PushMessage(msg->get_payload());
 
         PushQueue();
