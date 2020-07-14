@@ -164,7 +164,7 @@ enum Message_Type
     Acts_Exchange       = 1994,
     Acts_Accomplished   = 1995,
     Acts_LoadTask       = 1996,
-    Acts_SyncTask       = 1997
+    Acts_SyncTask       = 1997,
 
     // End
     MaxMessage          = 2000
