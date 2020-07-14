@@ -1,9 +1,7 @@
 #include "extension.h"
 #include "websocket.h"
 #include "message.h"
-#include <map>
 #include <chrono>
-#include <stdlib.h>
 #include <unordered_map>
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
@@ -92,28 +90,26 @@ public:
     {
         if (!Available())
         {
-        	if (!isResend)
-        	{
+            if (!isResend)
+            {
                 SaveQueue(message);
-        	}
+            }
             else
             {
-                smutils->LogMessage(myself, "Resend message still falling because ready state error.");
+                smutils->LogError(myself, "Resend message still falling because ready state error.");
             }
             return false;
         }
 
         g_LastSent = time(NULL);
         errcode ec;
-        printf("%sSend->[%s]\n", THIS_PREFIX, message.c_str());
-        smutils->LogError(myself, "Send->\n%s", message.c_str());
         m_WebSocket.send(m_Connection_hdl, message, opcode::text, ec);
         if (ec)
         {
-        	if (!isResend)
-        	{
+            if (!isResend)
+            {
                 SaveQueue(message);
-        	}  
+            }  
             smutils->LogError(myself, "Failed to send message to server: %s -> [%s]", ec.message().c_str(), message.c_str());
             return false;
         }
@@ -164,7 +160,7 @@ private:
         {
             if (!Send(iter->first, true))
             {
-                smutils->LogMessage(myself, "Failed to resend -> %s", iter->first.c_str());
+                smutils->LogError(myself, "Failed to resend -> %s", iter->first.c_str());
                 break;
             }
             smutils->LogMessage(myself, "Resend -> %s", iter->first.c_str());
@@ -375,11 +371,10 @@ private:
     {
         if (msg->get_opcode() != opcode::text)
         {
-            smutils->LogMessage(myself, "Recv '%d' from \"%s\".\nJson:\n%s", msg->get_opcode(), g_Socket_Url.c_str(), msg->get_raw_payload().c_str());
+            smutils->LogError(myself, "Recv '%d' from \"%s\".\nJson:\n%s", msg->get_opcode(), g_Socket_Url.c_str(), msg->get_raw_payload().c_str());
             return;
         }
 
-        smutils->LogError(myself, "Recv->\n%s", msg->get_payload().c_str());
         PushMessage(msg->get_payload());
 
         PushQueue();

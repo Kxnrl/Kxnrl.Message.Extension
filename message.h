@@ -33,8 +33,8 @@ enum Message_Type
     Server_PushMaps     = 113,
     Server_LoadMaps     = 114,
     Server_SendClient   = 115,
-	Server_PushMapCD    = 116,
-	Server_QueryMapCD   = 117,
+    Server_PushMapCD    = 116,
+    Server_QueryMapCD   = 117,
 
     // Forums
     Forums_LoadUser     = 201,
@@ -144,17 +144,27 @@ enum Message_Type
     Ranking_JB_Session  = 1133,
     Ranking_JB_Ranking  = 1134,
 
-	// CSGO->FFA
-	Ranking_FA_LoadUser = 1141,
-	Ranking_FA_Update   = 1142,
-	Ranking_FA_Session  = 1143,
-	Ranking_FA_Ranking  = 1144,
+    // CSGO->FFA
+    Ranking_FA_LoadUser = 1141,
+    Ranking_FA_Update   = 1142,
+    Ranking_FA_Session  = 1143,
+    Ranking_FA_Ranking  = 1144,
 
-	// CSGO->Casual
-	Ranking_CS_LoadUser = 1151,
-	Ranking_CS_Update   = 1152,
-	Ranking_CS_Session  = 1153,
-	Ranking_CS_Ranking  = 1154,
+    // CSGO->Casual
+    Ranking_CS_LoadUser = 1151,
+    Ranking_CS_Update   = 1152,
+    Ranking_CS_Session  = 1153,
+    Ranking_CS_Ranking  = 1154,
+
+    // Acts
+    Acts_LoadUser       = 1990,
+    Acts_SyncUser       = 1991,
+    Acts_SignUser       = 1992,
+    Acts_Update         = 1993,
+    Acts_Exchange       = 1994,
+    Acts_Accomplished   = 1995,
+    Acts_LoadTask       = 1996,
+    Acts_SyncTask       = 1997
 
     // End
     MaxMessage          = 2000
@@ -590,6 +600,14 @@ private:
         case Message_Type::Ranking_CS_Update:
         case Message_Type::Ranking_CS_Session:
         case Message_Type::Ranking_CS_Ranking:
+        case Message_Type::Acts_LoadUser:
+        case Message_Type::Acts_SyncUser:
+        case Message_Type::Acts_SignUser:
+        case Message_Type::Acts_Update:
+        case Message_Type::Acts_Exchange:
+        case Message_Type::Acts_Accomplished:
+        case Message_Type::Acts_LoadTask:
+        case Message_Type::Acts_SyncTask:
             return true;
         }
 
